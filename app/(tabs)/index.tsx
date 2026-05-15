@@ -1,227 +1,281 @@
 import { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  Pressable,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Circle } from 'react-native-svg';
 import { Trial, getTrials, getSettings } from '../../src/utils/storage';
-import { colors, spacing, cardStyle, bodyText, buttonBase, getUrgencyColor, getCurrencySymbol } from '../../src/utils/theme';
+import { colors, spacing, getCategoryColor, getCurrencySymbol } from '../../src/utils/theme';
 
-function getDaysLeft(endDate: string): number {
-  const diff = new Date(endDate).getTime() - Date.now();
-  return Math.max(0, diff / (1000 * 60 * 60 * 24));
-}
-
-function formatCountdown(endDate: string): string {
-  const diff = new Date(endDate).getTime() - Date.now();
-  if (diff <= 0) return 'Expired';
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  if (days > 0) return `${days}d ${hours}h`;
-  const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  return `${hours}h ${mins}m`;
-}
-
-function TrialCard({ trial, currency }: { trial: Trial; currency: string }) {
-  const daysLeft = getDaysLeft(trial.trialEndDate);
-  const urgencyColor = getUrgencyColor(daysLeft);
+function DonutChart({ total, segments, currency }: {
+  total: number;
+  segments: { value: number; color: string }[];
+  currency: string;
+}) {
+  const size = 180;
+  const strokeWidth = 22;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const center = size / 2;
   const sym = getCurrencySymbol(currency);
 
-  return (
-    <Pressable
-      style={[styles.card, { borderLeftColor: urgencyColor, borderLeftWidth: 4 }]}
-      onPress={() => router.push(`/trial/${trial.id}`)}
-    >
-      <View style={styles.cardTop}>
-        <View style={styles.cardLeft}>
-          <Text style={styles.cardIcon}>{trial.serviceIcon || '📱'}</Text>
-          <View>
-            <Text style={styles.cardName}>{trial.serviceName}</Text>
-            <Text style={styles.cardCharge}>{sym}{trial.chargeAmount.toFixed(2)}/month</Text>
-          </View>
-        </View>
-        <View style={[styles.badge, { backgroundColor: urgencyColor + '20' }]}>
-          <Text style={[styles.badgeText, { color: urgencyColor }]}>
-            {formatCountdown(trial.trialEndDate)}
-          </Text>
-        </View>
-      </View>
+  let accumulated = 0;
 
-      <Pressable
-        style={[styles.cancelButton, { borderColor: urgencyColor }]}
-        onPress={() => router.push(`/trial/${trial.id}`)}
-      >
-        <Text style={[styles.cancelButtonText, { color: urgencyColor }]}>Cancel now</Text>
-      </Pressable>
-    </Pressable>
+  return (
+    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <Svg width={size} height={size}>
+        <Circle
+          cx={center} cy={center} r={radius}
+          stroke="rgba(255,255,255,0.05)"
+          strokeWidth={strokeWidth}
+          fill="none"
+        />
+        {segments.map((seg, i) => {
+          const segLength = total > 0 ? (seg.value / total) * circumference : 0;
+          const rotation = total > 0 ? (accumulated / total) * 360 - 90 : -90;
+          accumulated += seg.value;
+          return (
+            <Circle
+              key={i}
+              cx={center} cy={center} r={radius}
+              stroke={seg.color}
+              strokeWidth={strokeWidth}
+              fill="none"
+              strokeDasharray={`${segLength} ${circumference - segLength}`}
+              strokeLinecap="round"
+              transform={`rotate(${rotation} ${center} ${center})`}
+            />
+          );
+        })}
+      </Svg>
+      <View style={styles.donutCenter}>
+        <Text style={styles.donutAmount}>{sym}{total.toFixed(2)}</Text>
+        <Text style={styles.donutLabel}>MONTHLY</Text>
+      </View>
+    </View>
   );
 }
 
-export default function Home() {
+function LetterAvatar({ name, color }: { name: string; color: string }) {
+  return (
+    <View style={[styles.avatar, { backgroundColor: color }]}>
+      <Text style={styles.avatarLetter}>{name.charAt(0).toUpperCase()}</Text>
+    </View>
+  );
+}
+
+export default function Dashboard() {
   const [trials, setTrials] = useState<Trial[]>([]);
   const [settings, setSettings] = useState({ currency: 'GBP', totalSaved: 0 });
-  const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     const [t, s] = await Promise.all([getTrials(), getSettings()]);
-    const active = t
-      .filter((tr) => tr.status === 'active')
-      .sort((a, b) => new Date(a.trialEndDate).getTime() - new Date(b.trialEndDate).getTime());
-    setTrials(active);
+    setTrials(t.filter((tr) => tr.status === 'active'));
     setSettings(s);
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await load();
-    setRefreshing(false);
-  };
-
-  const monthlyTotal = trials.reduce((sum, t) => sum + t.chargeAmount, 0);
   const sym = getCurrencySymbol(settings.currency);
+  const monthlyTotal = trials.reduce((sum, t) => sum + t.chargeAmount, 0);
+
+  const sorted = [...trials].sort(
+    (a, b) => new Date(a.trialEndDate).getTime() - new Date(b.trialEndDate).getTime()
+  );
+  const upcoming = sorted.slice(0, 3);
+  const highest = trials.length > 0 ? Math.max(...trials.map((t) => t.chargeAmount)) : 0;
+  const lowest = trials.length > 0 ? Math.min(...trials.map((t) => t.chargeAmount)) : 0;
+
+  const categoryMap = new Map<string, number>();
+  trials.forEach((t) => {
+    const cat = t.category || 'other';
+    categoryMap.set(cat, (categoryMap.get(cat) || 0) + t.chargeAmount);
+  });
+  const segments = Array.from(categoryMap.entries()).map(([cat, value]) => ({
+    value,
+    color: getCategoryColor(cat),
+  }));
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.logo}>unsub</Text>
-        <Text style={styles.protecting}>
-          Protecting {sym}{monthlyTotal.toFixed(2)}/month
-        </Text>
-      </View>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={styles.chartCard}>
+          <DonutChart total={monthlyTotal} segments={segments} currency={settings.currency} />
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Active</Text>
+              <Text style={styles.statValue}>{trials.length}</Text>
+            </View>
+            <View style={[styles.statItem, styles.statBorder]}>
+              <Text style={styles.statLabel}>Highest</Text>
+              <Text style={styles.statValue}>{sym}{highest.toFixed(2)}</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Lowest</Text>
+              <Text style={styles.statValue}>{sym}{lowest.toFixed(2)}</Text>
+            </View>
+          </View>
+        </View>
 
-      {trials.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyIcon}>🛡️</Text>
-          <Text style={styles.emptyTitle}>No active trials</Text>
-          <Text style={styles.emptySubtitle}>
-            Add a free trial to start tracking.{'\n'}We'll remind you before you get charged.
-          </Text>
-          <Pressable style={styles.addButtonLarge} onPress={() => router.push('/trial/add')}>
-            <Text style={styles.addButtonText}>+ Add your first trial</Text>
+        <View style={styles.summaryRow}>
+          <Pressable style={styles.summaryCard} onPress={() => router.push('/(tabs)/subscriptions')}>
+            <Text style={styles.summaryLabel}>YOUR SUBS</Text>
+            <View style={styles.summaryBottom}>
+              <Text style={styles.summaryValue}>{trials.length}</Text>
+              <Text style={styles.summaryArrow}>›</Text>
+            </View>
+          </Pressable>
+          <Pressable style={styles.summaryCard} onPress={() => router.push('/(tabs)/calendar')}>
+            <Text style={styles.summaryLabel}>UPCOMING</Text>
+            <View style={styles.summaryBottom}>
+              <Text style={styles.summaryValue}>{upcoming.length}</Text>
+              <Text style={styles.summaryArrow}>›</Text>
+            </View>
           </Pressable>
         </View>
-      ) : (
-        <FlatList
-          data={trials}
-          keyExtractor={(t) => t.id}
-          renderItem={({ item }) => <TrialCard trial={item} currency={settings.currency} />}
-          contentContainerStyle={styles.list}
-          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
-        />
-      )}
 
-      {settings.totalSaved > 0 && (
-        <View style={styles.savedBar}>
-          <Text style={styles.savedText}>You've saved {sym}{settings.totalSaved.toFixed(2)} 🎉</Text>
-        </View>
-      )}
-
-      {trials.length > 0 && (
-        <Pressable style={styles.fab} onPress={() => router.push('/trial/add')}>
-          <Text style={styles.fabText}>+</Text>
-        </Pressable>
-      )}
+        <Text style={styles.sectionHeader}>UPCOMING BILLS</Text>
+        {upcoming.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>No upcoming bills</Text>
+            <Pressable style={styles.addBtn} onPress={() => router.push('/trial/add')}>
+              <Text style={styles.addBtnText}>+ Add Subscription</Text>
+            </Pressable>
+          </View>
+        ) : (
+          upcoming.map((trial) => {
+            const catColor = getCategoryColor(trial.category);
+            const dueDate = new Date(trial.trialEndDate);
+            const dueStr = `Due ${dueDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
+            return (
+              <Pressable
+                key={trial.id}
+                style={styles.billCard}
+                onPress={() => router.push(`/trial/${trial.id}`)}
+              >
+                <View style={styles.billLeft}>
+                  <LetterAvatar name={trial.serviceName} color={catColor} />
+                  <View>
+                    <Text style={styles.billName}>{trial.serviceName}</Text>
+                    <Text style={styles.billDue}>{dueStr}</Text>
+                  </View>
+                </View>
+                <Text style={styles.billAmount}>{sym}{trial.chargeAmount.toFixed(2)}</Text>
+              </Pressable>
+            );
+          })
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.md,
+  scroll: { paddingBottom: 100 },
+  chartCard: {
+    backgroundColor: colors.card,
+    borderRadius: 20,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    padding: spacing.lg,
+    borderWidth: 0.5,
+    borderColor: colors.cardBorder,
+    alignItems: 'center',
   },
-  logo: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: colors.accent,
-    letterSpacing: -1,
+  donutCenter: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  protecting: { fontSize: 14, color: colors.textSecondary, marginTop: 2, ...bodyText },
-  list: { paddingHorizontal: spacing.lg, paddingBottom: 120 },
-  card: {
-    ...cardStyle,
+  donutAmount: { fontSize: 28, fontWeight: '800', color: colors.white },
+  donutLabel: { fontSize: 11, color: colors.textSecondary, letterSpacing: 1, marginTop: 2 },
+  statsRow: {
+    flexDirection: 'row',
+    marginTop: spacing.lg,
+    width: '100%',
   },
-  cardTop: {
+  statItem: { flex: 1, alignItems: 'center' },
+  statBorder: {
+    borderLeftWidth: 0.5,
+    borderRightWidth: 0.5,
+    borderColor: colors.cardBorder,
+  },
+  statLabel: { fontSize: 12, color: colors.textSecondary, marginBottom: 4 },
+  statValue: { fontSize: 18, fontWeight: '700', color: colors.white },
+  summaryRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginHorizontal: spacing.lg,
+    marginTop: 16,
+  },
+  summaryCard: {
+    flex: 1,
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 0.5,
+    borderColor: colors.cardBorder,
+  },
+  summaryLabel: {
+    fontSize: 11,
+    color: colors.sectionHeader,
+    letterSpacing: 1,
+    fontWeight: '600',
+  },
+  summaryBottom: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.sm,
+    marginTop: 8,
   },
-  cardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  cardIcon: { fontSize: 32 },
-  cardName: { fontSize: 17, fontWeight: '600', color: colors.text },
-  cardCharge: { fontSize: 14, color: colors.textSecondary, ...bodyText },
-  badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 99,
+  summaryValue: { fontSize: 24, fontWeight: '800', color: colors.white },
+  summaryArrow: { fontSize: 20, color: colors.textSecondary },
+  sectionHeader: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.sectionHeader,
+    letterSpacing: 1,
+    marginHorizontal: spacing.lg,
+    marginTop: 24,
+    marginBottom: 12,
   },
-  badgeText: { fontSize: 13, fontWeight: '700' },
-  cancelButton: {
-    borderWidth: 1.5,
-    ...buttonBase,
-    paddingVertical: 10,
-  },
-  cancelButtonText: { fontSize: 15, fontWeight: '600' },
-  empty: {
-    flex: 1,
-    justifyContent: 'center',
+  billCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-  },
-  emptyIcon: { fontSize: 64, marginBottom: spacing.md },
-  emptyTitle: { fontSize: 22, fontWeight: '700', color: colors.text, marginBottom: spacing.sm },
-  emptySubtitle: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    ...bodyText,
-    marginBottom: spacing.lg,
-  },
-  addButtonLarge: {
-    backgroundColor: colors.accent,
-    ...buttonBase,
-    paddingVertical: 14,
-    paddingHorizontal: spacing.xl,
+    backgroundColor: colors.card,
     borderRadius: 16,
+    padding: 16,
+    marginHorizontal: spacing.lg,
+    marginBottom: 10,
+    borderWidth: 0.5,
+    borderColor: colors.cardBorder,
   },
-  addButtonText: { fontSize: 17, fontWeight: '700', color: colors.white },
-  savedBar: {
-    position: 'absolute',
-    bottom: 95,
-    left: spacing.lg,
-    right: spacing.lg,
-    backgroundColor: colors.accentDark + '30',
-    borderRadius: 12,
-    padding: spacing.sm,
+  billLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     alignItems: 'center',
-  },
-  savedText: { fontSize: 15, fontWeight: '600', color: colors.accent },
-  fab: {
-    position: 'absolute',
-    right: spacing.lg,
-    bottom: 105,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.accent,
     justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
   },
-  fabText: { fontSize: 28, fontWeight: '600', color: colors.white, marginTop: -2 },
+  avatarLetter: { fontSize: 18, fontWeight: '700', color: colors.white },
+  billName: { fontSize: 16, fontWeight: '600', color: colors.white },
+  billDue: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
+  billAmount: { fontSize: 17, fontWeight: '700', color: colors.white },
+  emptyState: { alignItems: 'center', paddingVertical: 40 },
+  emptyText: { fontSize: 16, color: colors.textSecondary, marginBottom: 16 },
+  addBtn: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderWidth: 0.5,
+    borderColor: colors.cardBorder,
+  },
+  addBtnText: { fontSize: 15, fontWeight: '600', color: colors.white },
 });

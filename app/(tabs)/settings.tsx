@@ -1,10 +1,27 @@
 import { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable, Alert, Linking, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Linking, Switch } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Settings, getSettings, saveSettings } from '../../src/utils/storage';
 import { restorePurchases } from '../../src/utils/purchases';
-import { colors, spacing, cardStyle, bodyText, buttonBase } from '../../src/utils/theme';
+import { colors, spacing } from '../../src/utils/theme';
+
+function SettingRow({ icon, label, right, onPress }: {
+  icon: string;
+  label: string;
+  right?: React.ReactNode;
+  onPress?: () => void;
+}) {
+  return (
+    <Pressable style={styles.row} onPress={onPress}>
+      <View style={styles.rowLeft}>
+        <Text style={styles.rowIcon}>{icon}</Text>
+        <Text style={styles.rowLabel}>{label}</Text>
+      </View>
+      {right}
+    </Pressable>
+  );
+}
 
 export default function SettingsScreen() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -31,66 +48,122 @@ export default function SettingsScreen() {
       setSettings({ ...settings, isPremium: true });
       Alert.alert('Restored', 'Premium access restored!');
     } else {
-      Alert.alert('No purchases found', 'We couldn\'t find any previous purchases.');
+      Alert.alert('No purchases found', 'No previous purchases found.');
     }
   };
 
-  const handleDarkMode = () => {
-    const next = !settings.darkMode;
-    saveSettings({ darkMode: next });
-    setSettings({ ...settings, darkMode: next });
+  const handleDarkMode = (val: boolean) => {
+    saveSettings({ darkMode: val });
+    setSettings({ ...settings, darkMode: val });
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.logo}>unsub</Text>
-          <Text style={styles.title}>Settings</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Currency</Text>
-          <View style={styles.currencyRow}>
-            {currencies.map((c) => (
-              <Pressable
-                key={c}
-                style={[styles.currencyButton, settings.currency === c && styles.currencySelected]}
-                onPress={() => handleCurrency(c)}
-              >
-                <Text style={[styles.currencyText, settings.currency === c && styles.currencyTextSelected]}>
-                  {c === 'GBP' ? '£ GBP' : c === 'EUR' ? '€ EUR' : '$ USD'}
-                </Text>
-              </Pressable>
-            ))}
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={styles.profileSection}>
+          <View style={styles.avatarCircle}>
+            <Text style={styles.avatarText}>
+              {settings.isPremium ? 'P' : 'U'}
+            </Text>
           </View>
+          <Text style={styles.profileName}>Unsub User</Text>
+          <Text style={styles.profileEmail}>
+            {settings.isPremium ? 'Premium Member' : 'Free Plan'}
+          </Text>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Premium</Text>
-          {settings.isPremium ? (
-            <View style={styles.premiumBadge}>
-              <Text style={styles.premiumText}>Premium Active</Text>
-            </View>
-          ) : (
-            <Pressable style={styles.upgradeButton} onPress={() => Alert.alert('Upgrade', 'Purchase flow coming soon')}>
-              <Text style={styles.upgradeText}>Upgrade to Premium</Text>
-            </Pressable>
+        <Text style={styles.sectionHeader}>ACCOUNT</Text>
+        <View style={styles.sectionCard}>
+          <SettingRow
+            icon="👤"
+            label="Profile Info"
+            right={<Text style={styles.rowValue}>{settings.isPremium ? 'Premium' : 'Free'}</Text>}
+          />
+          <View style={styles.divider} />
+          <SettingRow
+            icon="💳"
+            label="Currency"
+            right={
+              <View style={styles.currencyRow}>
+                {currencies.map((c) => (
+                  <Pressable
+                    key={c}
+                    style={[styles.currencyChip, settings.currency === c && styles.currencyChipActive]}
+                    onPress={() => handleCurrency(c)}
+                  >
+                    <Text style={[styles.currencyText, settings.currency === c && styles.currencyTextActive]}>
+                      {c}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            }
+          />
+        </View>
+
+        <Text style={styles.sectionHeader}>PREFERENCES</Text>
+        <View style={styles.sectionCard}>
+          <SettingRow
+            icon="🔔"
+            label="Notifications"
+            right={
+              <Switch
+                value={true}
+                trackColor={{ false: '#333', true: colors.accent }}
+                thumbColor={colors.white}
+              />
+            }
+          />
+          <View style={styles.divider} />
+          <SettingRow
+            icon="🌙"
+            label="Dark Mode"
+            right={
+              <Switch
+                value={settings.darkMode}
+                onValueChange={handleDarkMode}
+                trackColor={{ false: '#333', true: colors.accent }}
+                thumbColor={colors.white}
+              />
+            }
+          />
+          <View style={styles.divider} />
+          <SettingRow
+            icon="🔒"
+            label="Privacy & Security"
+            right={<Text style={styles.rowArrow}>›</Text>}
+          />
+        </View>
+
+        <Text style={styles.sectionHeader}>SUPPORT</Text>
+        <View style={styles.sectionCard}>
+          <SettingRow
+            icon="❓"
+            label="Help Center"
+            right={<Text style={styles.rowArrow}>›</Text>}
+          />
+          <View style={styles.divider} />
+          <SettingRow
+            icon="🔄"
+            label="Restore Purchases"
+            onPress={handleRestore}
+          />
+          <View style={styles.divider} />
+          {!settings.isPremium && (
+            <>
+              <SettingRow
+                icon="⭐"
+                label="Upgrade to Premium"
+                onPress={() => Alert.alert('Upgrade', 'Purchase flow coming soon')}
+              />
+              <View style={styles.divider} />
+            </>
           )}
-          <Pressable style={styles.restoreButton} onPress={handleRestore}>
-            <Text style={styles.restoreText}>Restore Purchases</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>App</Text>
-          <Pressable style={styles.row} onPress={handleDarkMode}>
-            <Text style={styles.rowText}>Dark Mode</Text>
-            <Text style={styles.rowValue}>{settings.darkMode ? 'On' : 'Off'}</Text>
-          </Pressable>
-          <View style={{ height: 12 }} />
           <Pressable style={styles.row} onPress={() => Linking.openURL('https://apps.apple.com')}>
-            <Text style={styles.rowText}>Rate Unsub</Text>
+            <View style={styles.rowLeft}>
+              <Text style={styles.rowIcon}>⭐</Text>
+              <Text style={styles.rowLabel}>Rate Unsub</Text>
+            </View>
           </Pressable>
         </View>
 
@@ -102,77 +175,70 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
-  content: { paddingBottom: spacing.xxl },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    marginBottom: spacing.md,
-  },
-  logo: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: colors.accent,
-    letterSpacing: -1,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: colors.text,
-    marginTop: spacing.xs,
-  },
-  section: {
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: spacing.sm,
-  },
-  currencyRow: { flexDirection: 'row', gap: spacing.sm },
-  currencyButton: {
-    flex: 1,
-    ...buttonBase,
-    borderWidth: 1.5,
-    borderColor: colors.cardBorder,
-    backgroundColor: colors.card,
-  },
-  currencySelected: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accentDark + '30',
-  },
-  currencyText: { fontSize: 15, fontWeight: '600', color: colors.text },
-  currencyTextSelected: { color: colors.accent },
-  premiumBadge: {
-    ...cardStyle,
-    backgroundColor: colors.accentDark + '20',
+  scroll: { paddingBottom: 100 },
+  profileSection: {
     alignItems: 'center',
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.lg,
+  },
+  avatarCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.card,
+    borderWidth: 2,
+    borderColor: colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 12,
   },
-  premiumText: { fontSize: 16, fontWeight: '600', color: colors.accent },
-  upgradeButton: {
-    backgroundColor: colors.accent,
-    ...buttonBase,
-    marginBottom: 12,
+  avatarText: { fontSize: 24, fontWeight: '700', color: colors.accent },
+  profileName: { fontSize: 20, fontWeight: '700', color: colors.white },
+  profileEmail: { fontSize: 14, color: colors.textSecondary, marginTop: 4 },
+  sectionHeader: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.sectionHeader,
+    letterSpacing: 1,
+    marginHorizontal: spacing.lg,
+    marginTop: 24,
+    marginBottom: 10,
   },
-  upgradeText: { fontSize: 16, fontWeight: '700', color: colors.white },
-  restoreButton: {
+  sectionCard: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    marginHorizontal: spacing.lg,
     borderWidth: 0.5,
     borderColor: colors.cardBorder,
-    ...buttonBase,
+    overflow: 'hidden',
   },
-  restoreText: { fontSize: 15, color: colors.textSecondary },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    ...cardStyle,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
   },
-  rowText: { fontSize: 16, color: colors.text, ...bodyText },
-  rowValue: { fontSize: 16, color: colors.textSecondary },
+  rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  rowIcon: { fontSize: 18 },
+  rowLabel: { fontSize: 16, fontWeight: '500', color: colors.white },
+  rowValue: { fontSize: 14, color: colors.textSecondary },
+  rowArrow: { fontSize: 20, color: colors.textSecondary },
+  divider: {
+    height: 0.5,
+    backgroundColor: colors.cardBorder,
+    marginLeft: 48,
+  },
+  currencyRow: { flexDirection: 'row', gap: 6 },
+  currencyChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  currencyChipActive: { backgroundColor: colors.accent },
+  currencyText: { fontSize: 12, fontWeight: '600', color: colors.textSecondary },
+  currencyTextActive: { color: colors.white },
   version: {
     textAlign: 'center',
     color: colors.textSecondary,

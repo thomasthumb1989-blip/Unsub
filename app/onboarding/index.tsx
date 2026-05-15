@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing, cardStyle, bodyText, buttonBase } from '../../src/utils/theme';
+import { colors, spacing } from '../../src/utils/theme';
 import { saveSettings } from '../../src/utils/storage';
 import { services } from '../../src/data/services';
 
@@ -308,13 +308,13 @@ const styles = StyleSheet.create({
     color: colors.text,
     textAlign: 'center',
     marginBottom: spacing.md,
-    ...bodyText,
+    lineHeight: 24,
   },
   subtitle: {
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
-    ...bodyText,
+    lineHeight: 24,
   },
   bigStat: {
     fontSize: 80,
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   stepIcon: { fontSize: 36, marginRight: spacing.md },
   stepContent: { flex: 1 },
   stepTitle: { fontSize: 18, fontWeight: '600', color: colors.text },
-  stepDesc: { fontSize: 14, color: colors.textSecondary, marginTop: 2, ...bodyText },
+  stepDesc: { fontSize: 14, color: colors.textSecondary, marginTop: 2, lineHeight: 24 },
   serviceGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.lg,
-    ...bodyText,
+    lineHeight: 24,
   },
   featureList: { width: '100%', marginBottom: spacing.lg },
   featureRow: {
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   featureCheck: { fontSize: 16 },
-  featureText: { fontSize: 16, color: colors.text, ...bodyText },
+  featureText: { fontSize: 16, color: colors.text, lineHeight: 24 },
   planCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -442,7 +442,9 @@ const styles = StyleSheet.create({
   planNote: { fontSize: 13, color: colors.textSecondary },
   planPrice: { fontSize: 17, fontWeight: '700', color: colors.accent },
   purchaseButton: {
-    ...buttonBase,
+    minHeight: 48,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
     backgroundColor: colors.accent,
     borderRadius: 16,
     paddingVertical: 14,
@@ -477,7 +479,9 @@ const styles = StyleSheet.create({
   },
   dotActive: { backgroundColor: colors.accent, width: 24 },
   nextButton: {
-    ...buttonBase,
+    minHeight: 48,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
     backgroundColor: colors.accent,
     borderRadius: 16,
     paddingVertical: 14,

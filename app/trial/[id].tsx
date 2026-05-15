@@ -19,7 +19,15 @@ import {
   saveSettings,
 } from '../../src/utils/storage';
 import { cancelTrialReminders } from '../../src/utils/notifications';
-import { colors, spacing, cardStyle, bodyText, buttonBase, getUrgencyColor, getCurrencySymbol } from '../../src/utils/theme';
+import { colors, spacing, getCategoryColor, getUrgencyColor, getCurrencySymbol } from '../../src/utils/theme';
+
+function LetterAvatar({ name, color, size = 64 }: { name: string; color: string; size?: number }) {
+  return (
+    <View style={[styles.avatar, { backgroundColor: color, width: size, height: size, borderRadius: size * 0.25 }]}>
+      <Text style={[styles.avatarLetter, { fontSize: size * 0.4 }]}>{name.charAt(0).toUpperCase()}</Text>
+    </View>
+  );
+}
 
 export default function TrialDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -60,12 +68,11 @@ export default function TrialDetail() {
 
   const daysLeft = Math.max(0, (new Date(trial.trialEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   const urgencyColor = getUrgencyColor(daysLeft);
+  const catColor = getCategoryColor(trial.category);
   const sym = getCurrencySymbol(currency);
 
   const handleCancel = () => {
-    if (trial.cancelUrl) {
-      Linking.openURL(trial.cancelUrl);
-    }
+    if (trial.cancelUrl) Linking.openURL(trial.cancelUrl);
   };
 
   const handleCancelled = async () => {
@@ -82,7 +89,7 @@ export default function TrialDetail() {
   };
 
   const handleDelete = () => {
-    Alert.alert('Delete trial?', `Remove ${trial.serviceName} from tracking?`, [
+    Alert.alert('Delete subscription?', `Remove ${trial.serviceName}?`, [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
@@ -98,67 +105,72 @@ export default function TrialDetail() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()}>
-            <Text style={styles.backText}>← Back</Text>
+          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+            <Text style={styles.backText}>‹</Text>
           </Pressable>
+          <Text style={styles.headerTitle}>Details</Text>
+          <View style={{ width: 32 }} />
         </View>
 
         <View style={styles.center}>
-          <Text style={styles.icon}>{trial.serviceIcon || '📱'}</Text>
+          <LetterAvatar name={trial.serviceName} color={catColor} size={80} />
           <Text style={styles.name}>{trial.serviceName}</Text>
-          <View style={[styles.countdownBadge, { backgroundColor: urgencyColor + '20' }]}>
-            <Text style={[styles.countdown, { color: urgencyColor }]}>{countdown}</Text>
+          <Text style={styles.categoryLabel}>{trial.category || 'Other'}</Text>
+
+          <View style={styles.priceCard}>
+            <Text style={styles.priceAmount}>{sym}{trial.chargeAmount.toFixed(2)}</Text>
+            <Text style={styles.priceCycle}>/{trial.cycle || 'month'}</Text>
           </View>
-          <Text style={styles.charge}>
-            {sym}{trial.chargeAmount.toFixed(2)}/month if not cancelled
-          </Text>
+
+          <View style={[styles.countdownPill, { backgroundColor: urgencyColor + '20' }]}>
+            <Text style={[styles.countdownText, { color: urgencyColor }]}>{countdown}</Text>
+          </View>
         </View>
 
-        <View style={styles.actions}>
-          {trial.cancelUrl ? (
-            <Pressable style={[styles.actionButton, { backgroundColor: colors.red }]} onPress={handleCancel}>
-              <Text style={styles.actionText}>Cancel Now →</Text>
-            </Pressable>
-          ) : null}
-
-          <Pressable style={[styles.actionButton, { backgroundColor: colors.accent }]} onPress={handleCancelled}>
-            <Text style={styles.actionText}>I've Cancelled</Text>
-          </Pressable>
-
-          <Pressable style={styles.deleteButton} onPress={handleDelete}>
-            <Text style={styles.deleteText}>Delete</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.info}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Trial ends</Text>
-            <Text style={styles.infoValue}>
+        <Text style={styles.sectionHeader}>DETAILS</Text>
+        <View style={styles.detailCard}>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Next bill</Text>
+            <Text style={styles.detailValue}>
               {new Date(trial.trialEndDate).toLocaleDateString()}
             </Text>
           </View>
-          <View style={{ height: 12 }} />
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Added</Text>
-            <Text style={styles.infoValue}>
+          <View style={styles.divider} />
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Added</Text>
+            <Text style={styles.detailValue}>
               {new Date(trial.createdAt).toLocaleDateString()}
             </Text>
           </View>
-          <View style={{ height: 12 }} />
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Reminders</Text>
-            <Text style={styles.infoValue}>
+          <View style={styles.divider} />
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Reminders</Text>
+            <Text style={styles.detailValue}>
               {[
                 trial.reminders['3day'] && '3d',
                 trial.reminders['1day'] && '1d',
                 trial.reminders['2hour'] && '2h',
-              ]
-                .filter(Boolean)
-                .join(', ')}
+              ].filter(Boolean).join(', ') || 'None'}
             </Text>
           </View>
+        </View>
+
+        <View style={styles.actions}>
+          {trial.cancelUrl && (
+            <Pressable style={styles.cancelNowBtn} onPress={handleCancel}>
+              <Text style={styles.cancelNowText}>Cancel Subscription →</Text>
+            </Pressable>
+          )}
+
+          <Pressable style={styles.cancelledBtn} onPress={handleCancelled}>
+            <Text style={styles.cancelledText}>I've Cancelled</Text>
+          </Pressable>
+
+          <Pressable style={styles.deleteBtn} onPress={handleDelete}>
+            <Text style={styles.deleteText}>Delete</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -167,42 +179,99 @@ export default function TrialDetail() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
-  scrollContent: { paddingBottom: spacing.xxl },
-  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.md },
-  backText: { fontSize: 16, color: colors.accent },
-  center: { alignItems: 'center', paddingTop: spacing.xl, paddingHorizontal: spacing.lg },
-  icon: { fontSize: 64, marginBottom: spacing.md },
-  name: { fontSize: 28, fontWeight: '800', color: colors.text },
-  countdownBadge: {
+  scroll: { paddingBottom: spacing.xxl },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+  },
+  backBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
+  backText: { fontSize: 28, color: colors.textSecondary },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: colors.white },
+  center: {
+    alignItems: 'center',
+    paddingTop: spacing.xl,
+    paddingHorizontal: spacing.lg,
+  },
+  avatar: { alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  avatarLetter: { fontWeight: '700', color: colors.white },
+  name: { fontSize: 24, fontWeight: '800', color: colors.white },
+  categoryLabel: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginTop: 4,
+    textTransform: 'capitalize',
+  },
+  priceCard: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginTop: 20,
+  },
+  priceAmount: { fontSize: 36, fontWeight: '800', color: colors.white },
+  priceCycle: { fontSize: 16, color: colors.textSecondary },
+  countdownPill: {
     paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 99,
-    marginTop: spacing.md,
+    marginTop: 16,
   },
-  countdown: { fontSize: 32, fontWeight: '700' },
-  charge: { fontSize: 16, color: colors.textSecondary, marginTop: spacing.sm, ...bodyText },
-  actions: { paddingHorizontal: spacing.lg, marginTop: spacing.xl, gap: 12 },
-  actionButton: {
-    ...buttonBase,
+  countdownText: { fontSize: 15, fontWeight: '700' },
+  sectionHeader: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.sectionHeader,
+    letterSpacing: 1,
+    marginHorizontal: spacing.lg,
+    marginTop: 28,
+    marginBottom: 10,
+  },
+  detailCard: {
+    backgroundColor: colors.card,
     borderRadius: 16,
-    paddingVertical: 14,
+    marginHorizontal: spacing.lg,
+    borderWidth: 0.5,
+    borderColor: colors.cardBorder,
+    overflow: 'hidden',
   },
-  actionText: { fontSize: 18, fontWeight: '700', color: colors.white },
-  deleteButton: {
-    ...buttonBase,
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  detailLabel: { fontSize: 15, color: colors.textSecondary },
+  detailValue: { fontSize: 15, fontWeight: '600', color: colors.white },
+  divider: { height: 0.5, backgroundColor: colors.cardBorder, marginLeft: 16 },
+  actions: {
+    paddingHorizontal: spacing.lg,
+    marginTop: 24,
+    gap: 10,
+  },
+  cancelNowBtn: {
+    backgroundColor: colors.red,
+    borderRadius: 14,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelNowText: { fontSize: 16, fontWeight: '700', color: colors.white },
+  cancelledBtn: {
+    backgroundColor: colors.accent,
+    borderRadius: 14,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelledText: { fontSize: 16, fontWeight: '700', color: colors.white },
+  deleteBtn: {
+    borderRadius: 14,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 0.5,
     borderColor: colors.cardBorder,
   },
   deleteText: { fontSize: 15, color: colors.textSecondary },
-  info: {
-    paddingHorizontal: spacing.lg,
-    marginTop: spacing.xl,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    ...cardStyle,
-  },
-  infoLabel: { fontSize: 15, color: colors.textSecondary, ...bodyText },
-  infoValue: { fontSize: 15, fontWeight: '600', color: colors.text },
 });

@@ -8,6 +8,8 @@ export type Trial = {
   chargeAmount: number;
   currency: string;
   cancelUrl: string;
+  category?: string;
+  cycle?: 'monthly' | 'yearly' | 'one-time';
   reminders: { '3day': boolean; '1day': boolean; '2hour': boolean };
   status: 'active' | 'cancelled' | 'charged';
   createdAt: string;
