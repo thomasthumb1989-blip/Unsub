@@ -9,7 +9,8 @@ import {
   Animated,
 } from 'react-native';
 import { router } from 'expo-router';
-import { colors, spacing } from '../../src/utils/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors, spacing, cardStyle, bodyText, buttonBase } from '../../src/utils/theme';
 import { saveSettings } from '../../src/utils/storage';
 import { services } from '../../src/data/services';
 
@@ -88,10 +89,10 @@ function Screen3({ onSelect }: { onSelect: (v: string) => void }) {
         ))}
       </View>
       {selected === '6+' && (
-        <Text style={styles.highlight}>That could be over £500 wasted! 😱</Text>
+        <Text style={styles.highlight}>That could be over £500 wasted!</Text>
       )}
       {selected === '3-5' && (
-        <Text style={styles.highlight}>That's roughly £200-400 gone! 😬</Text>
+        <Text style={styles.highlight}>That's roughly £200-400 gone!</Text>
       )}
       {selected === '1-2' && (
         <Text style={styles.highlight}>Even 1-2 can cost you £100+</Text>
@@ -161,7 +162,7 @@ function PaywallScreen() {
   const plans = [
     { id: 'weekly', label: 'Weekly', price: '£1.99/week', note: 'Cancel anytime' },
     { id: 'yearly', label: 'Yearly', price: '£19.99/year', note: 'Save 81%' },
-    { id: 'lifetime', label: 'Lifetime', price: '£2.99 once', note: 'Best value ⭐', best: true },
+    { id: 'lifetime', label: 'Lifetime', price: '£2.99 once', note: 'Best value', best: true },
   ];
   const [selectedPlan, setSelectedPlan] = useState('lifetime');
 
@@ -246,7 +247,7 @@ export default function Onboarding() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <FlatList
         ref={flatListRef}
         data={screens}
@@ -282,7 +283,7 @@ export default function Onboarding() {
           </Pressable>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
   slide: {
     flex: 1,
     paddingHorizontal: spacing.lg,
-    paddingTop: 80,
+    paddingTop: 60,
     alignItems: 'center',
   },
   emoji: { fontSize: 64, marginBottom: spacing.md },
@@ -307,12 +308,13 @@ const styles = StyleSheet.create({
     color: colors.text,
     textAlign: 'center',
     marginBottom: spacing.md,
+    ...bodyText,
   },
   subtitle: {
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 24,
+    ...bodyText,
   },
   bigStat: {
     fontSize: 80,
@@ -361,7 +363,7 @@ const styles = StyleSheet.create({
   stepIcon: { fontSize: 36, marginRight: spacing.md },
   stepContent: { flex: 1 },
   stepTitle: { fontSize: 18, fontWeight: '600', color: colors.text },
-  stepDesc: { fontSize: 14, color: colors.textSecondary, marginTop: 2 },
+  stepDesc: { fontSize: 14, color: colors.textSecondary, marginTop: 2, ...bodyText },
   serviceGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -399,6 +401,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.lg,
+    ...bodyText,
   },
   featureList: { width: '100%', marginBottom: spacing.lg },
   featureRow: {
@@ -408,18 +411,18 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   featureCheck: { fontSize: 16 },
-  featureText: { fontSize: 16, color: colors.text },
+  featureText: { fontSize: 16, color: colors.text, ...bodyText },
   planCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    padding: spacing.md,
+    backgroundColor: colors.card,
     borderRadius: 16,
+    padding: 16,
     borderWidth: 2,
     borderColor: colors.cardBorder,
-    backgroundColor: colors.card,
-    marginBottom: spacing.sm,
+    marginBottom: 12,
   },
   planCardSelected: { borderColor: colors.accent },
   planCardBest: { borderColor: colors.accent, borderWidth: 2.5 },
@@ -439,11 +442,11 @@ const styles = StyleSheet.create({
   planNote: { fontSize: 13, color: colors.textSecondary },
   planPrice: { fontSize: 17, fontWeight: '700', color: colors.accent },
   purchaseButton: {
+    ...buttonBase,
     backgroundColor: colors.accent,
-    paddingVertical: 16,
     borderRadius: 16,
+    paddingVertical: 14,
     width: '100%',
-    alignItems: 'center',
     marginTop: spacing.md,
   },
   purchaseButtonText: { fontSize: 18, fontWeight: '700', color: colors.white },
@@ -458,14 +461,11 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     marginTop: spacing.sm,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.lg,
   },
   bottomBar: {
-    position: 'absolute',
-    bottom: 40,
-    left: 0,
-    right: 0,
     paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
     alignItems: 'center',
   },
   dots: { flexDirection: 'row', gap: 8, marginBottom: spacing.md },
@@ -477,11 +477,11 @@ const styles = StyleSheet.create({
   },
   dotActive: { backgroundColor: colors.accent, width: 24 },
   nextButton: {
+    ...buttonBase,
     backgroundColor: colors.accent,
-    paddingVertical: 16,
     borderRadius: 16,
+    paddingVertical: 14,
     width: '100%',
-    alignItems: 'center',
   },
   nextButtonText: { fontSize: 18, fontWeight: '700', color: colors.white },
 });

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Trial, getTrials, getSettings } from '../../src/utils/storage';
-import { colors, spacing, getUrgencyColor, getCurrencySymbol } from '../../src/utils/theme';
+import { colors, spacing, cardStyle, bodyText, buttonBase, getUrgencyColor, getCurrencySymbol } from '../../src/utils/theme';
 
 function getDaysLeft(endDate: string): number {
   const diff = new Date(endDate).getTime() - Date.now();
@@ -90,7 +90,7 @@ export default function Home() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Unsub</Text>
+        <Text style={styles.logo}>unsub</Text>
         <Text style={styles.protecting}>
           Protecting {sym}{monthlyTotal.toFixed(2)}/month
         </Text>
@@ -113,6 +113,7 @@ export default function Home() {
           keyExtractor={(t) => t.id}
           renderItem={({ item }) => <TrialCard trial={item} currency={settings.currency} />}
           contentContainerStyle={styles.list}
+          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
         />
       )}
@@ -139,16 +140,16 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: spacing.md,
   },
-  headerTitle: { fontSize: 32, fontWeight: '800', color: colors.text },
-  protecting: { fontSize: 14, color: colors.accent, marginTop: 2 },
+  logo: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.accent,
+    letterSpacing: -1,
+  },
+  protecting: { fontSize: 14, color: colors.textSecondary, marginTop: 2, ...bodyText },
   list: { paddingHorizontal: spacing.lg, paddingBottom: 120 },
   card: {
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
+    ...cardStyle,
   },
   cardTop: {
     flexDirection: 'row',
@@ -159,25 +160,24 @@ const styles = StyleSheet.create({
   cardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   cardIcon: { fontSize: 32 },
   cardName: { fontSize: 17, fontWeight: '600', color: colors.text },
-  cardCharge: { fontSize: 14, color: colors.textSecondary },
+  cardCharge: { fontSize: 14, color: colors.textSecondary, ...bodyText },
   badge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 99,
   },
   badgeText: { fontSize: 13, fontWeight: '700' },
   cancelButton: {
     borderWidth: 1.5,
-    borderRadius: 12,
+    ...buttonBase,
     paddingVertical: 10,
-    alignItems: 'center',
   },
   cancelButtonText: { fontSize: 15, fontWeight: '600' },
   empty: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: spacing.xl,
+    paddingHorizontal: spacing.lg,
   },
   emptyIcon: { fontSize: 64, marginBottom: spacing.md },
   emptyTitle: { fontSize: 22, fontWeight: '700', color: colors.text, marginBottom: spacing.sm },
@@ -185,12 +185,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 24,
+    ...bodyText,
     marginBottom: spacing.lg,
   },
   addButtonLarge: {
     backgroundColor: colors.accent,
-    paddingVertical: 16,
+    ...buttonBase,
+    paddingVertical: 14,
     paddingHorizontal: spacing.xl,
     borderRadius: 16,
   },

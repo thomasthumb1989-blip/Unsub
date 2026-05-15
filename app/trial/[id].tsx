@@ -6,6 +6,7 @@ import {
   Pressable,
   Linking,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,7 +19,7 @@ import {
   saveSettings,
 } from '../../src/utils/storage';
 import { cancelTrialReminders } from '../../src/utils/notifications';
-import { colors, spacing, getUrgencyColor, getCurrencySymbol } from '../../src/utils/theme';
+import { colors, spacing, cardStyle, bodyText, buttonBase, getUrgencyColor, getCurrencySymbol } from '../../src/utils/theme';
 
 export default function TrialDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -74,7 +75,7 @@ export default function TrialDetail() {
     await cancelTrialReminders(trial.id);
 
     Alert.alert(
-      '🎉 Money Saved!',
+      'Money Saved!',
       `You saved ${sym}${trial.chargeAmount.toFixed(2)} by cancelling ${trial.serviceName} on time!`,
       [{ text: 'Nice!', onPress: () => router.back() }]
     );
@@ -96,89 +97,100 @@ export default function TrialDetail() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={styles.backText}>← Back</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.center}>
-        <Text style={styles.icon}>{trial.serviceIcon || '📱'}</Text>
-        <Text style={styles.name}>{trial.serviceName}</Text>
-        <Text style={[styles.countdown, { color: urgencyColor }]}>{countdown}</Text>
-        <Text style={styles.charge}>
-          {sym}{trial.chargeAmount.toFixed(2)}/month if not cancelled
-        </Text>
-      </View>
-
-      <View style={styles.actions}>
-        {trial.cancelUrl ? (
-          <Pressable style={[styles.actionButton, { backgroundColor: colors.red }]} onPress={handleCancel}>
-            <Text style={styles.actionText}>Cancel Now →</Text>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.header}>
+          <Pressable onPress={() => router.back()}>
+            <Text style={styles.backText}>← Back</Text>
           </Pressable>
-        ) : null}
+        </View>
 
-        <Pressable style={[styles.actionButton, { backgroundColor: colors.accent }]} onPress={handleCancelled}>
-          <Text style={styles.actionText}>I've Cancelled ✓</Text>
-        </Pressable>
-
-        <Pressable style={styles.deleteButton} onPress={handleDelete}>
-          <Text style={styles.deleteText}>Delete</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.info}>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Trial ends</Text>
-          <Text style={styles.infoValue}>
-            {new Date(trial.trialEndDate).toLocaleDateString()}
+        <View style={styles.center}>
+          <Text style={styles.icon}>{trial.serviceIcon || '📱'}</Text>
+          <Text style={styles.name}>{trial.serviceName}</Text>
+          <View style={[styles.countdownBadge, { backgroundColor: urgencyColor + '20' }]}>
+            <Text style={[styles.countdown, { color: urgencyColor }]}>{countdown}</Text>
+          </View>
+          <Text style={styles.charge}>
+            {sym}{trial.chargeAmount.toFixed(2)}/month if not cancelled
           </Text>
         </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Added</Text>
-          <Text style={styles.infoValue}>
-            {new Date(trial.createdAt).toLocaleDateString()}
-          </Text>
+
+        <View style={styles.actions}>
+          {trial.cancelUrl ? (
+            <Pressable style={[styles.actionButton, { backgroundColor: colors.red }]} onPress={handleCancel}>
+              <Text style={styles.actionText}>Cancel Now →</Text>
+            </Pressable>
+          ) : null}
+
+          <Pressable style={[styles.actionButton, { backgroundColor: colors.accent }]} onPress={handleCancelled}>
+            <Text style={styles.actionText}>I've Cancelled</Text>
+          </Pressable>
+
+          <Pressable style={styles.deleteButton} onPress={handleDelete}>
+            <Text style={styles.deleteText}>Delete</Text>
+          </Pressable>
         </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Reminders</Text>
-          <Text style={styles.infoValue}>
-            {[
-              trial.reminders['3day'] && '3d',
-              trial.reminders['1day'] && '1d',
-              trial.reminders['2hour'] && '2h',
-            ]
-              .filter(Boolean)
-              .join(', ')}
-          </Text>
+
+        <View style={styles.info}>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Trial ends</Text>
+            <Text style={styles.infoValue}>
+              {new Date(trial.trialEndDate).toLocaleDateString()}
+            </Text>
+          </View>
+          <View style={{ height: 12 }} />
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Added</Text>
+            <Text style={styles.infoValue}>
+              {new Date(trial.createdAt).toLocaleDateString()}
+            </Text>
+          </View>
+          <View style={{ height: 12 }} />
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Reminders</Text>
+            <Text style={styles.infoValue}>
+              {[
+                trial.reminders['3day'] && '3d',
+                trial.reminders['1day'] && '1d',
+                trial.reminders['2hour'] && '2h',
+              ]
+                .filter(Boolean)
+                .join(', ')}
+            </Text>
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
+  scrollContent: { paddingBottom: spacing.xxl },
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   backText: { fontSize: 16, color: colors.accent },
-  center: { alignItems: 'center', paddingTop: spacing.xl },
+  center: { alignItems: 'center', paddingTop: spacing.xl, paddingHorizontal: spacing.lg },
   icon: { fontSize: 64, marginBottom: spacing.md },
   name: { fontSize: 28, fontWeight: '800', color: colors.text },
-  countdown: { fontSize: 36, fontWeight: '700', marginTop: spacing.sm },
-  charge: { fontSize: 16, color: colors.textSecondary, marginTop: spacing.sm },
-  actions: { paddingHorizontal: spacing.lg, marginTop: spacing.xl, gap: spacing.sm },
+  countdownBadge: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 99,
+    marginTop: spacing.md,
+  },
+  countdown: { fontSize: 32, fontWeight: '700' },
+  charge: { fontSize: 16, color: colors.textSecondary, marginTop: spacing.sm, ...bodyText },
+  actions: { paddingHorizontal: spacing.lg, marginTop: spacing.xl, gap: 12 },
   actionButton: {
+    ...buttonBase,
     borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: 'center',
+    paddingVertical: 14,
   },
   actionText: { fontSize: 18, fontWeight: '700', color: colors.white },
   deleteButton: {
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderWidth: 1,
+    ...buttonBase,
+    borderWidth: 0.5,
     borderColor: colors.cardBorder,
   },
   deleteText: { fontSize: 15, color: colors.textSecondary },
@@ -189,13 +201,8 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
+    ...cardStyle,
   },
-  infoLabel: { fontSize: 15, color: colors.textSecondary },
+  infoLabel: { fontSize: 15, color: colors.textSecondary, ...bodyText },
   infoValue: { fontSize: 15, fontWeight: '600', color: colors.text },
 });

@@ -1,7 +1,7 @@
 export const colors = {
   bg: '#0F172A',
   card: '#1E293B',
-  cardBorder: '#334155',
+  cardBorder: 'rgba(255,255,255,0.1)',
   text: '#F8FAFC',
   textSecondary: '#94A3B8',
   accent: '#10B981',
@@ -17,9 +17,28 @@ export const spacing = {
   xs: 4,
   sm: 8,
   md: 16,
-  lg: 24,
+  lg: 20,
   xl: 32,
   xxl: 48,
+};
+
+export const cardStyle = {
+  backgroundColor: colors.card,
+  borderRadius: 16,
+  padding: 16,
+  borderWidth: 0.5,
+  borderColor: colors.cardBorder,
+};
+
+export const bodyText = {
+  lineHeight: 24,
+};
+
+export const buttonBase = {
+  minHeight: 48,
+  borderRadius: 12,
+  alignItems: 'center' as const,
+  justifyContent: 'center' as const,
 };
 
 export function getUrgencyColor(daysLeft: number): string {

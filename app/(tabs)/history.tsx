@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Trial, getTrials, getSettings } from '../../src/utils/storage';
-import { colors, spacing, getCurrencySymbol } from '../../src/utils/theme';
+import { colors, spacing, cardStyle, bodyText, getCurrencySymbol } from '../../src/utils/theme';
 
 export default function History() {
   const [trials, setTrials] = useState<Trial[]>([]);
@@ -25,7 +25,10 @@ export default function History() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Text style={styles.title}>History</Text>
+      <View style={styles.header}>
+        <Text style={styles.logo}>unsub</Text>
+        <Text style={styles.title}>History</Text>
+      </View>
 
       <View style={styles.savedCard}>
         <Text style={styles.savedLabel}>Total saved</Text>
@@ -46,6 +49,7 @@ export default function History() {
           data={trials}
           keyExtractor={(t) => t.id}
           contentContainerStyle={styles.list}
+          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
           renderItem={({ item }) => (
             <View style={styles.card}>
               <View style={styles.cardLeft}>
@@ -70,44 +74,50 @@ export default function History() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
-  title: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: colors.text,
+  header: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
+  logo: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.accent,
+    letterSpacing: -1,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.text,
+    marginTop: spacing.xs,
+  },
   savedCard: {
-    margin: spacing.lg,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+    ...cardStyle,
     backgroundColor: colors.accentDark + '20',
     borderRadius: 20,
     padding: spacing.lg,
     alignItems: 'center',
-    borderWidth: 1,
     borderColor: colors.accent + '40',
   },
-  savedLabel: { fontSize: 14, color: colors.accent },
+  savedLabel: { fontSize: 14, color: colors.accent, ...bodyText },
   savedAmount: { fontSize: 48, fontWeight: '800', color: colors.accent, marginVertical: spacing.xs },
-  savedSub: { fontSize: 14, color: colors.textSecondary },
+  savedSub: { fontSize: 14, color: colors.textSecondary, ...bodyText },
   list: { paddingHorizontal: spacing.lg, paddingBottom: 100 },
   card: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: colors.card,
-    borderRadius: 14,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
+    ...cardStyle,
   },
   cardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   cardIcon: { fontSize: 28 },
   cardName: { fontSize: 16, fontWeight: '600', color: colors.text },
-  cardDate: { fontSize: 13, color: colors.textSecondary },
+  cardDate: { fontSize: 13, color: colors.textSecondary, ...bodyText },
   cardSaved: { fontSize: 15, fontWeight: '700', color: colors.accent },
-  empty: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: spacing.xl },
+  empty: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: spacing.lg },
   emptyIcon: { fontSize: 48, marginBottom: spacing.md },
   emptyText: { fontSize: 18, fontWeight: '600', color: colors.text, marginBottom: spacing.sm },
-  emptySubtext: { fontSize: 14, color: colors.textSecondary, textAlign: 'center' },
+  emptySubtext: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', ...bodyText },
 });

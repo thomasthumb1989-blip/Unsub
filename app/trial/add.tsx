@@ -6,7 +6,6 @@ import {
   TextInput,
   Pressable,
   ScrollView,
-  FlatList,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -16,7 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { addTrial, getSettings, getTrials } from '../../src/utils/storage';
 import { scheduleTrialReminders } from '../../src/utils/notifications';
 import { searchServices, ServiceInfo } from '../../src/data/services';
-import { colors, spacing, getCurrencySymbol } from '../../src/utils/theme';
+import { colors, spacing, cardStyle, bodyText, buttonBase, getCurrencySymbol } from '../../src/utils/theme';
 
 const FREE_LIMIT = 3;
 
@@ -28,7 +27,6 @@ export default function AddTrial() {
   const [chargeAmount, setChargeAmount] = useState('');
   const [cancelUrl, setCancelUrl] = useState('');
   const [trialDays, setTrialDays] = useState(7);
-  const [customDate, setCustomDate] = useState('');
   const [reminders, setReminders] = useState({ '3day': true, '1day': true, '2hour': true });
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -89,7 +87,7 @@ export default function AddTrial() {
   const quickDays = [7, 14, 30];
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
@@ -168,19 +166,21 @@ export default function AddTrial() {
           />
 
           <Text style={styles.label}>Reminders</Text>
-          {(['3day', '1day', '2hour'] as const).map((key) => {
+          {(['3day', '1day', '2hour'] as const).map((key, index) => {
             const labels = { '3day': '3 days before', '1day': '1 day before', '2hour': '2 hours before' };
             return (
-              <Pressable
-                key={key}
-                style={styles.reminderRow}
-                onPress={() => setReminders({ ...reminders, [key]: !reminders[key] })}
-              >
-                <Text style={styles.reminderText}>{labels[key]}</Text>
-                <View style={[styles.toggle, reminders[key] && styles.toggleOn]}>
-                  <View style={[styles.toggleDot, reminders[key] && styles.toggleDotOn]} />
-                </View>
-              </Pressable>
+              <View key={key}>
+                {index > 0 && <View style={{ height: 12 }} />}
+                <Pressable
+                  style={styles.reminderRow}
+                  onPress={() => setReminders({ ...reminders, [key]: !reminders[key] })}
+                >
+                  <Text style={styles.reminderText}>{labels[key]}</Text>
+                  <View style={[styles.toggle, reminders[key] && styles.toggleOn]}>
+                    <View style={[styles.toggleDot, reminders[key] && styles.toggleDotOn]} />
+                  </View>
+                </Pressable>
+              </View>
             );
           })}
 
@@ -213,41 +213,34 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   input: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: spacing.md,
+    ...cardStyle,
     fontSize: 16,
     color: colors.text,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
   },
   suggestionsBox: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
+    ...cardStyle,
+    padding: 0,
     marginTop: spacing.xs,
+    overflow: 'hidden',
   },
   suggestionRow: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.md,
     gap: 12,
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.5,
     borderBottomColor: colors.cardBorder,
   },
   suggestionIcon: { fontSize: 24 },
   suggestionName: { fontSize: 16, fontWeight: '600', color: colors.text },
-  suggestionDetail: { fontSize: 13, color: colors.textSecondary },
+  suggestionDetail: { fontSize: 13, color: colors.textSecondary, ...bodyText },
   quickRow: { flexDirection: 'row', gap: spacing.sm },
   quickButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
+    ...buttonBase,
     borderWidth: 1.5,
     borderColor: colors.cardBorder,
     backgroundColor: colors.card,
-    alignItems: 'center',
   },
   quickSelected: {
     borderColor: colors.accent,
@@ -259,14 +252,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
+    ...cardStyle,
   },
-  reminderText: { fontSize: 16, color: colors.text },
+  reminderText: { fontSize: 16, color: colors.text, ...bodyText },
   toggle: {
     width: 48,
     height: 28,
@@ -284,10 +272,10 @@ const styles = StyleSheet.create({
   },
   toggleDotOn: { alignSelf: 'flex-end' },
   saveButton: {
+    ...buttonBase,
     backgroundColor: colors.accent,
     borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: 'center',
+    paddingVertical: 14,
     marginTop: spacing.lg,
   },
   saveDisabled: { opacity: 0.5 },
