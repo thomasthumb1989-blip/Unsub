@@ -137,10 +137,7 @@ export default function Dashboard() {
         <Text style={styles.sectionHeader}>UPCOMING BILLS</Text>
         {upcoming.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No upcoming bills</Text>
-            <Pressable style={styles.addBtn} onPress={() => router.push('/trial/add')}>
-              <Text style={styles.addBtnText}>+ Add Subscription</Text>
-            </Pressable>
+            <Text style={styles.emptyText}>No upcoming subscriptions</Text>
           </View>
         ) : (
           upcoming.map((trial) => {

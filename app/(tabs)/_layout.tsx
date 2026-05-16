@@ -17,7 +17,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
   return (
     <View style={{ position: 'relative' }}>
-      <View style={{ position: 'absolute', bottom: 80, left: 0, right: 0, alignItems: 'center', zIndex: 999 }}>
+      <View style={{ position: 'absolute', bottom: 90, left: 0, right: 0, alignItems: 'center', zIndex: 999 }}>
         <TouchableOpacity
           style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#10B981', justifyContent: 'center', alignItems: 'center', elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 }}
           onPress={() => router.push('/trial/add')}

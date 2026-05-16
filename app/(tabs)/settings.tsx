@@ -130,9 +130,6 @@ export default function SettingsScreen() {
               <Text style={styles.profileName}>{settings.userName || 'Tap to set name'}</Text>
             </Pressable>
           )}
-          <Text style={styles.profileEmail}>
-            {settings.isPremium ? 'Premium Member' : 'Free Plan'}
-          </Text>
         </View>
 
         <Text style={styles.sectionHeader}>ACCOUNT</Text>
