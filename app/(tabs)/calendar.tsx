@@ -98,18 +98,15 @@ export default function CalendarScreen() {
               const dayBills = billsByDay.get(day) || [];
               return (
                 <View key={i} style={styles.dayCell}>
-                  <View style={[styles.dayNumber, isToday(day) && styles.todayCircle]}>
-                    <Text
-                      numberOfLines={1}
-                      style={[
-                        styles.dayText,
-                        isToday(day) && styles.todayText,
-                        hasBills && styles.boldDay,
-                      ]}
-                    >
-                      {String(day)}
-                    </Text>
-                  </View>
+                  <Text
+                    style={[
+                      styles.dayText,
+                      isToday(day) && styles.todayCircle,
+                      hasBills && styles.boldDay,
+                    ]}
+                  >
+                    {String(day)}
+                  </Text>
                   {hasBills && (
                     <View style={styles.dotRow}>
                       {dayBills.slice(0, 2).map((t, j) => (
@@ -197,17 +194,16 @@ const styles = StyleSheet.create({
     minHeight: 44,
     overflow: 'visible',
   },
-  dayNumber: {
-    minWidth: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
+  todayCircle: {
+    backgroundColor: colors.textSecondary,
+    color: colors.white,
+    fontWeight: '700',
+    borderRadius: 14,
+    overflow: 'hidden',
+    paddingHorizontal: 6,
+    paddingVertical: 6,
   },
-  todayCircle: { backgroundColor: colors.textSecondary },
-  dayText: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', minWidth: 20 },
-  todayText: { color: colors.white, fontWeight: '700' },
+  dayText: { fontSize: 14, color: colors.textSecondary, textAlign: 'center' },
   boldDay: { color: colors.white, fontWeight: '700' },
   dotRow: { flexDirection: 'row', gap: 3, marginTop: 2 },
   dot: { width: 5, height: 5, borderRadius: 2.5 },
