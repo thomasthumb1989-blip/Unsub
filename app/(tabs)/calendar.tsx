@@ -99,11 +99,14 @@ export default function CalendarScreen() {
               return (
                 <View key={i} style={styles.dayCell}>
                   <View style={[styles.dayNumber, isToday(day) && styles.todayCircle]}>
-                    <Text style={[
-                      styles.dayText,
-                      isToday(day) && styles.todayText,
-                      hasBills && styles.boldDay,
-                    ]}>
+                    <Text
+                      numberOfLines={1}
+                      style={[
+                        styles.dayText,
+                        isToday(day) && styles.todayText,
+                        hasBills && styles.boldDay,
+                      ]}
+                    >
                       {String(day)}
                     </Text>
                   </View>
@@ -195,12 +198,12 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   dayNumber: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    minWidth: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'visible',
+    paddingHorizontal: 4,
   },
   todayCircle: { backgroundColor: colors.textSecondary },
   dayText: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', minWidth: 20 },
