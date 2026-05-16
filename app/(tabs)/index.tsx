@@ -125,7 +125,7 @@ export default function Dashboard() {
               <Text style={styles.summaryArrow}>›</Text>
             </View>
           </Pressable>
-          <Pressable style={styles.summaryCard} onPress={() => router.push('/(tabs)/calendar')}>
+          <Pressable style={styles.summaryCard} onPress={() => router.push('/(tabs)/history')}>
             <Text style={styles.summaryLabel}>UPCOMING</Text>
             <View style={styles.summaryBottom}>
               <Text style={styles.summaryValue}>{upcoming.length}</Text>

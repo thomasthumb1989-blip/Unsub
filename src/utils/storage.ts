@@ -21,6 +21,7 @@ export type Settings = {
   totalSaved: number;
   onboardingComplete: boolean;
   darkMode: boolean;
+  userName: string;
 };
 
 const TRIALS_KEY = '@unsub_trials';
@@ -32,6 +33,7 @@ const DEFAULT_SETTINGS: Settings = {
   totalSaved: 0,
   onboardingComplete: false,
   darkMode: true,
+  userName: '',
 };
 
 export async function getTrials(): Promise<Trial[]> {

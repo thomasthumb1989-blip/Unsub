@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Linking, Switch } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Linking, Switch, TextInput } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
@@ -27,6 +27,8 @@ function SettingRow({ icon, label, right, onPress }: {
 export default function SettingsScreen() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState('');
 
   useFocusEffect(
     useCallback(() => {
@@ -102,10 +104,32 @@ export default function SettingsScreen() {
         <View style={styles.profileSection}>
           <View style={styles.avatarCircle}>
             <Text style={styles.avatarText}>
-              {settings.isPremium ? 'P' : 'U'}
+              {(settings.userName || 'U').charAt(0).toUpperCase()}
             </Text>
           </View>
-          <Text style={styles.profileName}>Unsub User</Text>
+          {editingName ? (
+            <View style={styles.nameEditRow}>
+              <TextInput
+                style={styles.nameInput}
+                value={nameInput}
+                onChangeText={setNameInput}
+                placeholder="Enter your name"
+                placeholderTextColor={colors.textSecondary}
+                autoFocus
+                onSubmitEditing={() => {
+                  if (nameInput.trim()) {
+                    saveSettings({ userName: nameInput.trim() });
+                    setSettings({ ...settings, userName: nameInput.trim() });
+                  }
+                  setEditingName(false);
+                }}
+              />
+            </View>
+          ) : (
+            <Pressable onPress={() => { setNameInput(settings.userName || ''); setEditingName(true); }}>
+              <Text style={styles.profileName}>{settings.userName || 'Tap to set name'}</Text>
+            </Pressable>
+          )}
           <Text style={styles.profileEmail}>
             {settings.isPremium ? 'Premium Member' : 'Free Plan'}
           </Text>
@@ -116,7 +140,7 @@ export default function SettingsScreen() {
           <SettingRow
             icon="👤"
             label="Profile Info"
-            right={<Text style={styles.rowValue}>{settings.isPremium ? 'Premium' : 'Free'}</Text>}
+            right={<Text style={styles.rowValue}>{settings.isPremium ? 'Premium' : 'Free Plan'}</Text>}
           />
           <View style={styles.divider} />
           <SettingRow
@@ -243,7 +267,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   avatarText: { fontSize: 24, fontWeight: '700', color: colors.accent },
-  profileName: { fontSize: 20, fontWeight: '700', color: colors.white },
+  profileName: { fontSize: 20, fontWeight: '700', color: colors.white, textAlign: 'center' },
+  nameEditRow: { marginTop: 4 },
+  nameInput: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.white,
+    textAlign: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.accent,
+    paddingVertical: 4,
+    minWidth: 200,
+  },
   profileEmail: { fontSize: 14, color: colors.textSecondary, marginTop: 4 },
   sectionHeader: {
     fontSize: 12,

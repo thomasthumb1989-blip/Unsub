@@ -34,6 +34,7 @@ export default function HistoryScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <Text style={styles.brandLogo}>Unsub</Text>
       <Text style={styles.pageTitle}>History</Text>
 
       <View style={styles.summaryCard}>
@@ -70,6 +71,14 @@ export default function HistoryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
+  brandLogo: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#10B981',
+    letterSpacing: -1,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+  },
   pageTitle: {
     fontSize: 24,
     fontWeight: '800',
