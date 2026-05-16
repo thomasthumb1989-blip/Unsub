@@ -39,12 +39,9 @@ export default function Subscriptions() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.brandLogo}>Unsub</Text>
-        <View style={styles.headerIcons}>
-          <Pressable onPress={() => setShowSearch(!showSearch)}>
-            <Text style={styles.headerIcon}>🔍</Text>
-          </Pressable>
-          <Text style={styles.headerIcon}>🔽</Text>
-        </View>
+        <Pressable onPress={() => setShowSearch(!showSearch)} style={styles.searchBtn}>
+          <Text style={styles.searchIcon}>⌕</Text>
+        </Pressable>
       </View>
 
       {showSearch && (
@@ -88,9 +85,6 @@ export default function Subscriptions() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={styles.emptyText}>No subscriptions yet</Text>
-            <Pressable style={styles.addBtn} onPress={() => router.push('/trial/add')}>
-              <Text style={styles.addBtnText}>+ Add Subscription</Text>
-            </Pressable>
           </View>
         }
         ListFooterComponent={
@@ -122,8 +116,15 @@ const styles = StyleSheet.create({
     color: '#10B981',
     letterSpacing: -1,
   },
-  headerIcons: { flexDirection: 'row', gap: 16 },
-  headerIcon: { fontSize: 18, color: colors.textSecondary },
+  searchBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchIcon: { fontSize: 20, color: colors.textSecondary },
   searchInput: {
     backgroundColor: colors.card,
     borderRadius: 12,
@@ -169,15 +170,6 @@ const styles = StyleSheet.create({
   },
   totalLabel: { fontSize: 15, color: colors.accent },
   totalAmount: { fontSize: 22, fontWeight: '800', color: colors.white },
-  empty: { alignItems: 'center', paddingVertical: 60 },
-  emptyText: { fontSize: 16, color: colors.textSecondary, marginBottom: 16 },
-  addBtn: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderWidth: 0.5,
-    borderColor: colors.cardBorder,
-  },
-  addBtnText: { fontSize: 15, fontWeight: '600', color: colors.white },
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
+  emptyText: { fontSize: 16, color: colors.textSecondary, textAlign: 'center' },
 });
