@@ -105,7 +105,8 @@ const styles = StyleSheet.create({
   addButton: {
     position: 'absolute',
     top: -30,
-    left: -28,
+    left: '50%',
+    transform: [{ translateX: -26 }],
     width: 52,
     height: 52,
     borderRadius: 26,

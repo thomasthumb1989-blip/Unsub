@@ -160,11 +160,10 @@ function Screen5({ onSelect }: { onSelect: (names: string[]) => void }) {
 
 function PaywallScreen() {
   const plans = [
-    { id: 'weekly', label: 'Weekly', price: '£1.99/week', note: 'Cancel anytime' },
-    { id: 'yearly', label: 'Yearly', price: '£19.99/year', note: 'Save 81%' },
-    { id: 'lifetime', label: 'Lifetime', price: '£2.99 once', note: 'Best value', best: true },
+    { id: 'weekly', label: 'Weekly', price: '£3.99/week', note: '3-day free trial', best: true },
+    { id: 'yearly', label: 'Annual', price: '£29.99/year', note: 'Save 85%' },
   ];
-  const [selectedPlan, setSelectedPlan] = useState('lifetime');
+  const [selectedPlan, setSelectedPlan] = useState('weekly');
 
   const handlePurchase = async () => {
     await saveSettings({ onboardingComplete: true });

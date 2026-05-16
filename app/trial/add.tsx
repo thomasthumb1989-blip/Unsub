@@ -14,13 +14,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { v4 as uuidv4 } from 'uuid';
 import { addTrial, getSettings, getTrials } from '../../src/utils/storage';
 import { scheduleTrialReminders } from '../../src/utils/notifications';
-import { searchServices, ServiceInfo, categories } from '../../src/data/services';
+import { searchServices, ServiceInfo } from '../../src/data/services';
 import { colors, spacing, getCurrencySymbol } from '../../src/utils/theme';
 
 const FREE_LIMIT = 3;
 const DISPLAY_CATEGORIES = ['Music', 'Video', 'Cloud', 'Gaming', 'Software', 'Other'];
 
+type Mode = 'trial' | 'subscription';
+
 export default function AddTrial() {
+  const [mode, setMode] = useState<Mode>('trial');
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<ServiceInfo[]>([]);
   const [serviceName, setServiceName] = useState('');
@@ -32,6 +35,7 @@ export default function AddTrial() {
   const [cycle, setCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [reminders, setReminders] = useState({ '3day': true, '1day': true, '2hour': true });
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [nextBillDate, setNextBillDate] = useState('');
 
   const handleSearch = (text: string) => {
     setQuery(text);
@@ -63,12 +67,22 @@ export default function AddTrial() {
     const activeCount = trials.filter((t) => t.status === 'active').length;
 
     if (!settings.isPremium && activeCount >= FREE_LIMIT) {
-      alert(`Free tier limited to ${FREE_LIMIT} active trials. Upgrade for unlimited.`);
+      router.push('/paywall');
       return;
     }
 
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + trialDays);
+    let endDate: Date;
+    if (mode === 'trial') {
+      endDate = new Date();
+      endDate.setDate(endDate.getDate() + trialDays);
+    } else {
+      if (nextBillDate) {
+        endDate = new Date(nextBillDate);
+      } else {
+        endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + (cycle === 'yearly' ? 12 : 1));
+      }
+    }
 
     const trial = {
       id: uuidv4(),
@@ -80,13 +94,15 @@ export default function AddTrial() {
       cancelUrl,
       category: category.toLowerCase(),
       cycle,
-      reminders,
+      reminders: mode === 'trial' ? reminders : { '3day': true, '1day': true, '2hour': false },
       status: 'active' as const,
       createdAt: new Date().toISOString(),
     };
 
     await addTrial(trial);
-    await scheduleTrialReminders(trial);
+    if (mode === 'trial') {
+      await scheduleTrialReminders(trial);
+    }
     router.back();
   };
 
@@ -101,8 +117,27 @@ export default function AddTrial() {
             <Pressable onPress={() => router.back()} style={styles.backBtn}>
               <Text style={styles.backText}>‹</Text>
             </Pressable>
-            <Text style={styles.title}>New Subscription</Text>
+            <Text style={styles.title}>Add Subscription</Text>
             <View style={{ width: 32 }} />
+          </View>
+
+          <View style={styles.modeToggle}>
+            <Pressable
+              style={[styles.modeBtn, mode === 'trial' && styles.modeBtnActive]}
+              onPress={() => setMode('trial')}
+            >
+              <Text style={[styles.modeText, mode === 'trial' && styles.modeTextActive]}>
+                Free Trial
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[styles.modeBtn, mode === 'subscription' && styles.modeBtnActive]}
+              onPress={() => setMode('subscription')}
+            >
+              <Text style={[styles.modeText, mode === 'subscription' && styles.modeTextActive]}>
+                Active Subscription
+              </Text>
+            </Pressable>
           </View>
 
           <View style={styles.iconPicker}>
@@ -138,9 +173,11 @@ export default function AddTrial() {
             </View>
           )}
 
-          <Text style={styles.label}>MONTHLY PRICE</Text>
+          <Text style={styles.label}>
+            {mode === 'trial' ? 'PRICE AFTER TRIAL' : 'MONTHLY PRICE'}
+          </Text>
           <View style={styles.priceRow}>
-            <Text style={styles.priceSymbol}>$</Text>
+            <Text style={styles.priceSymbol}>£</Text>
             <TextInput
               style={styles.priceInput}
               placeholder="0.00"
@@ -179,16 +216,33 @@ export default function AddTrial() {
               </Pressable>
             </View>
             <View style={styles.colHalf}>
-              <Text style={styles.label}>TRIAL DAYS</Text>
-              <View style={styles.selectBox}>
-                <TextInput
-                  style={styles.selectText}
-                  value={trialDays.toString()}
-                  onChangeText={(t) => setTrialDays(parseInt(t) || 0)}
-                  keyboardType="number-pad"
-                  placeholderTextColor={colors.textSecondary}
-                />
-              </View>
+              {mode === 'trial' ? (
+                <>
+                  <Text style={styles.label}>TRIAL DAYS</Text>
+                  <View style={styles.selectBox}>
+                    <TextInput
+                      style={styles.selectText}
+                      value={trialDays.toString()}
+                      onChangeText={(t) => setTrialDays(parseInt(t) || 0)}
+                      keyboardType="number-pad"
+                      placeholderTextColor={colors.textSecondary}
+                    />
+                  </View>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.label}>NEXT BILL (DD/MM)</Text>
+                  <View style={styles.selectBox}>
+                    <TextInput
+                      style={styles.selectText}
+                      value={nextBillDate}
+                      onChangeText={setNextBillDate}
+                      placeholder="2026-06-15"
+                      placeholderTextColor={colors.textSecondary}
+                    />
+                  </View>
+                </>
+              )}
             </View>
           </View>
 
@@ -203,29 +257,35 @@ export default function AddTrial() {
             keyboardType="url"
           />
 
-          <Text style={styles.label}>REMINDERS</Text>
-          {(['3day', '1day', '2hour'] as const).map((key, index) => {
-            const labels = { '3day': '3 days before', '1day': '1 day before', '2hour': '2 hours before' };
-            return (
-              <Pressable
-                key={key}
-                style={[styles.reminderRow, index > 0 && { marginTop: 8 }]}
-                onPress={() => setReminders({ ...reminders, [key]: !reminders[key] })}
-              >
-                <Text style={styles.reminderText}>{labels[key]}</Text>
-                <View style={[styles.checkbox, reminders[key] && styles.checkboxActive]}>
-                  {reminders[key] && <Text style={styles.checkMark}>✓</Text>}
-                </View>
-              </Pressable>
-            );
-          })}
+          {mode === 'trial' && (
+            <>
+              <Text style={styles.label}>REMINDERS</Text>
+              {(['3day', '1day', '2hour'] as const).map((key, index) => {
+                const labels = { '3day': '3 days before', '1day': '1 day before', '2hour': '2 hours before' };
+                return (
+                  <Pressable
+                    key={key}
+                    style={[styles.reminderRow, index > 0 && { marginTop: 8 }]}
+                    onPress={() => setReminders({ ...reminders, [key]: !reminders[key] })}
+                  >
+                    <Text style={styles.reminderText}>{labels[key]}</Text>
+                    <View style={[styles.checkbox, reminders[key] && styles.checkboxActive]}>
+                      {reminders[key] && <Text style={styles.checkMark}>✓</Text>}
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </>
+          )}
 
           <Pressable
             style={[styles.saveButton, !serviceName && styles.saveDisabled]}
             onPress={handleSave}
             disabled={!serviceName}
           >
-            <Text style={styles.saveText}>Add Subscription</Text>
+            <Text style={styles.saveText}>
+              {mode === 'trial' ? 'Add Free Trial' : 'Add Subscription'}
+            </Text>
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -246,6 +306,32 @@ const styles = StyleSheet.create({
   backBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
   backText: { fontSize: 28, color: colors.textSecondary },
   title: { fontSize: 18, fontWeight: '700', color: colors.white },
+  modeToggle: {
+    flexDirection: 'row',
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: spacing.lg,
+    borderWidth: 0.5,
+    borderColor: colors.cardBorder,
+  },
+  modeBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modeBtnActive: {
+    backgroundColor: colors.accent,
+  },
+  modeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  modeTextActive: {
+    color: colors.white,
+  },
   iconPicker: { alignItems: 'center', marginBottom: spacing.xl },
   iconCircle: {
     width: 72,

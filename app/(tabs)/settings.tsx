@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Linking, Switch } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Settings, getSettings, saveSettings } from '../../src/utils/storage';
 import { restorePurchases } from '../../src/utils/purchases';
@@ -154,7 +154,7 @@ export default function SettingsScreen() {
               <SettingRow
                 icon="⭐"
                 label="Upgrade to Premium"
-                onPress={() => Alert.alert('Upgrade', 'Purchase flow coming soon')}
+                onPress={() => router.push('/paywall')}
               />
               <View style={styles.divider} />
             </>
