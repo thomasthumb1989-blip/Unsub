@@ -18,7 +18,7 @@ import { searchServices, ServiceInfo } from '../../src/data/services';
 import { colors, spacing, getCurrencySymbol } from '../../src/utils/theme';
 
 const FREE_LIMIT = 3;
-const DISPLAY_CATEGORIES = ['Music', 'Video', 'Cloud', 'Gaming', 'Software', 'Other'];
+const DISPLAY_CATEGORIES = ['Music', 'Video', 'Cloud', 'Gaming', 'Software', 'Entertainment', 'Lifestyle', 'Other'];
 
 type Mode = 'trial' | 'subscription';
 

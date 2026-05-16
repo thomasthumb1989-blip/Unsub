@@ -100,7 +100,7 @@ export default function PaywallScreen() {
           </Text>
         </Pressable>
 
-        <Pressable onPress={handleRestore}>
+        <Pressable onPress={handleRestore} style={styles.restoreBtn}>
           <Text style={styles.restoreText}>Restore Purchases</Text>
         </Pressable>
 
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   planCardSelected: { borderColor: colors.accent },
-  planLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  planLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   planLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   radio: {
     width: 22,
@@ -205,10 +205,13 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   purchaseButtonText: { fontSize: 18, fontWeight: '700', color: colors.white },
+  restoreBtn: {
+    alignItems: 'center',
+    marginTop: spacing.md,
+  },
   restoreText: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginTop: spacing.md,
     textDecorationLine: 'underline',
   },
   legalText: {

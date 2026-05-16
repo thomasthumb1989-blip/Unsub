@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Linking, Switch } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Notifications from 'expo-notifications';
 import { Settings, getSettings, saveSettings } from '../../src/utils/storage';
 import { restorePurchases } from '../../src/utils/purchases';
 import { colors, spacing } from '../../src/utils/theme';
@@ -25,10 +26,16 @@ function SettingRow({ icon, label, right, onPress }: {
 
 export default function SettingsScreen() {
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
-      getSettings().then(setSettings);
+      (async () => {
+        const s = await getSettings();
+        setSettings(s);
+        const { status } = await Notifications.getPermissionsAsync();
+        setNotificationsEnabled(status === 'granted');
+      })();
     }, [])
   );
 
@@ -39,6 +46,34 @@ export default function SettingsScreen() {
   const handleCurrency = (c: string) => {
     saveSettings({ currency: c });
     setSettings({ ...settings, currency: c });
+  };
+
+  const handleNotifications = async (val: boolean) => {
+    if (val) {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status === 'granted') {
+        setNotificationsEnabled(true);
+      } else {
+        Alert.alert(
+          'Notifications Disabled',
+          'Enable notifications in your device settings to receive trial reminders.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() },
+          ]
+        );
+      }
+    } else {
+      setNotificationsEnabled(false);
+      Alert.alert(
+        'Disable Notifications',
+        'To fully disable notifications, go to your device settings.',
+        [
+          { text: 'OK' },
+          { text: 'Open Settings', onPress: () => Linking.openSettings() },
+        ]
+      );
+    }
   };
 
   const handleRestore = async () => {
@@ -55,12 +90,15 @@ export default function SettingsScreen() {
   const handleDarkMode = (val: boolean) => {
     saveSettings({ darkMode: val });
     setSettings({ ...settings, darkMode: val });
+    if (!val) {
+      Alert.alert('Light Mode', 'Light mode will be fully supported in a future update. Your preference has been saved.');
+    }
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.brandLogo}>unsub</Text>
+        <Text style={styles.brandLogo}>Unsub</Text>
         <View style={styles.profileSection}>
           <View style={styles.avatarCircle}>
             <Text style={styles.avatarText}>
@@ -109,7 +147,8 @@ export default function SettingsScreen() {
             label="Notifications"
             right={
               <Switch
-                value={true}
+                value={notificationsEnabled}
+                onValueChange={handleNotifications}
                 trackColor={{ false: '#333', true: colors.accent }}
                 thumbColor={colors.white}
               />
@@ -133,6 +172,7 @@ export default function SettingsScreen() {
             icon="🔒"
             label="Privacy & Security"
             right={<Text style={styles.rowArrow}>›</Text>}
+            onPress={() => router.push('/privacy')}
           />
         </View>
 
@@ -142,6 +182,7 @@ export default function SettingsScreen() {
             icon="❓"
             label="Help Center"
             right={<Text style={styles.rowArrow}>›</Text>}
+            onPress={() => router.push('/help')}
           />
           <View style={styles.divider} />
           <SettingRow

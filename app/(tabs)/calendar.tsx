@@ -104,7 +104,7 @@ export default function CalendarScreen() {
                       isToday(day) && styles.todayText,
                       hasBills && styles.boldDay,
                     ]}>
-                      {day}
+                      {String(day)}
                     </Text>
                   </View>
                   {hasBills && (
@@ -126,7 +126,7 @@ export default function CalendarScreen() {
         ) : (
           monthBills.map((trial) => {
             const d = new Date(trial.trialEndDate);
-            const dateStr = d.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
+            const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
             return (
               <Pressable
                 key={trial.id}

@@ -38,7 +38,7 @@ export default function Subscriptions() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.brandLogo}>unsub</Text>
+        <Text style={styles.brandLogo}>Unsub</Text>
         <View style={styles.headerIcons}>
           <Pressable onPress={() => setShowSearch(!showSearch)}>
             <Text style={styles.headerIcon}>🔍</Text>

@@ -44,6 +44,8 @@ export const categoryColors: Record<string, string> = {
   dating: '#EC4899',
   education: '#F59E0B',
   software: '#8B5CF6',
+  entertainment: '#F59E0B',
+  lifestyle: '#EC4899',
   other: '#6B7280',
 };
 

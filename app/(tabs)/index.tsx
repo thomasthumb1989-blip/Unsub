@@ -98,7 +98,7 @@ export default function Dashboard() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.brandLogo}>unsub</Text>
+        <Text style={styles.brandLogo}>Unsub</Text>
         <View style={styles.chartCard}>
           <DonutChart total={monthlyTotal} segments={segments} currency={settings.currency} />
           <View style={styles.statsRow}>

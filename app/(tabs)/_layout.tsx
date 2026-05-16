@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { colors } from '../../src/utils/theme';
@@ -14,19 +14,17 @@ const TAB_ICONS: Record<string, string> = {
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const insets = useSafeAreaInsets();
   const bottomPad = Math.max(insets.bottom, 12);
-  const tabNames = state.routes.map((r: any) => r.name);
-
-  const midpoint = Math.floor(tabNames.length / 2);
 
   return (
     <View style={{ position: 'relative' }}>
-      <View style={styles.addButtonWrapper}>
-        <Pressable
-          style={styles.addButton}
+      <View style={{ position: 'absolute', bottom: 80, left: 0, right: 0, alignItems: 'center', zIndex: 999 }}>
+        <TouchableOpacity
+          style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#10B981', justifyContent: 'center', alignItems: 'center', elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 }}
           onPress={() => router.push('/trial/add')}
+          activeOpacity={0.8}
         >
-          <Text style={styles.addButtonText}>+</Text>
-        </Pressable>
+          <Text style={{ fontSize: 28, color: '#fff', fontWeight: '600', marginTop: -2 }}>+</Text>
+        </TouchableOpacity>
       </View>
       <View style={[styles.tabBar, { paddingBottom: bottomPad }]}>
         {state.routes.map((route: any, index: number) => {
@@ -97,32 +95,5 @@ const styles = StyleSheet.create({
   },
   tabIconActive: {
     color: colors.white,
-  },
-  addButtonWrapper: {
-    position: 'absolute',
-    bottom: 90,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  addButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  addButtonText: {
-    fontSize: 28,
-    fontWeight: '600',
-    color: '#000',
-    marginTop: -2,
   },
 });
