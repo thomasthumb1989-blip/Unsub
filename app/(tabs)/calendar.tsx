@@ -1,9 +1,15 @@
 import { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Trial, getTrials, getSettings } from '../../src/utils/storage';
 import { colors, spacing, getCategoryColor, getCurrencySymbol } from '../../src/utils/theme';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const CARD_H_MARGIN = spacing.lg;
+const CARD_PADDING = spacing.lg;
+const GRID_WIDTH = SCREEN_WIDTH - (CARD_H_MARGIN * 2) - (CARD_PADDING * 2);
+const CELL_SIZE = Math.floor(GRID_WIDTH / 7);
 
 const DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const MONTHS = [
@@ -64,12 +70,23 @@ export default function CalendarScreen() {
     else setMonth(month + 1);
   };
 
-  const cells: (number | null)[] = [];
-  for (let i = 0; i < firstDay; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-
   const isToday = (day: number) =>
     day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+
+  const weeks: (number | null)[][] = [];
+  let currentWeek: (number | null)[] = [];
+  for (let i = 0; i < firstDay; i++) currentWeek.push(null);
+  for (let d = 1; d <= daysInMonth; d++) {
+    currentWeek.push(d);
+    if (currentWeek.length === 7) {
+      weeks.push(currentWeek);
+      currentWeek = [];
+    }
+  }
+  if (currentWeek.length > 0) {
+    while (currentWeek.length < 7) currentWeek.push(null);
+    weeks.push(currentWeek);
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -87,37 +104,42 @@ export default function CalendarScreen() {
 
           <View style={styles.weekRow}>
             {DAYS.map((d, i) => (
-              <Text key={i} style={styles.weekDay}>{d}</Text>
+              <View key={i} style={styles.dayCell}>
+                <Text style={styles.weekDay}>{d}</Text>
+              </View>
             ))}
           </View>
 
-          <View style={styles.daysGrid}>
-            {cells.map((day, i) => {
-              if (day === null) return <View key={i} style={styles.dayCell} />;
-              const hasBills = billsByDay.has(day);
-              const dayBills = billsByDay.get(day) || [];
-              return (
-                <View key={i} style={styles.dayCell}>
-                  <Text
-                    style={[
-                      styles.dayText,
-                      isToday(day) && styles.todayCircle,
-                      hasBills && styles.boldDay,
-                    ]}
-                  >
-                    {String(day)}
-                  </Text>
-                  {hasBills && (
-                    <View style={styles.dotRow}>
-                      {dayBills.slice(0, 2).map((t, j) => (
-                        <View key={j} style={[styles.dot, { backgroundColor: getCategoryColor(t.category) }]} />
-                      ))}
-                    </View>
+          {weeks.map((week, wi) => (
+            <View key={wi} style={styles.weekRow}>
+              {week.map((day, di) => (
+                <View key={di} style={styles.dayCell}>
+                  {day !== null && (
+                    <>
+                      <View style={isToday(day) ? styles.todayCircle : undefined}>
+                        <Text
+                          style={[
+                            styles.dayText,
+                            isToday(day) && styles.todayText,
+                            billsByDay.has(day) && styles.boldDay,
+                          ]}
+                        >
+                          {day}
+                        </Text>
+                      </View>
+                      {billsByDay.has(day) && (
+                        <View style={styles.dotRow}>
+                          {(billsByDay.get(day) || []).slice(0, 2).map((t, j) => (
+                            <View key={j} style={[styles.dot, { backgroundColor: getCategoryColor(t.category) }]} />
+                          ))}
+                        </View>
+                      )}
+                    </>
                   )}
                 </View>
-              );
-            })}
-          </View>
+              ))}
+            </View>
+          ))}
         </View>
 
         <Text style={styles.sectionHeader}>BILLS THIS MONTH</Text>
@@ -178,30 +200,30 @@ const styles = StyleSheet.create({
   monthTitle: { fontSize: 18, fontWeight: '700', color: colors.white },
   monthNav: { flexDirection: 'row', gap: 20 },
   navArrow: { fontSize: 24, color: colors.textSecondary, paddingHorizontal: 4 },
-  weekRow: { flexDirection: 'row', marginBottom: 8 },
+  weekRow: { flexDirection: 'row' },
   weekDay: {
-    flex: 1,
-    textAlign: 'center',
     fontSize: 12,
     color: colors.textSecondary,
     fontWeight: '600',
+    textAlign: 'center',
   },
-  daysGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   dayCell: {
-    width: '14.28%',
+    width: CELL_SIZE,
+    height: 44,
     alignItems: 'center',
-    paddingVertical: 4,
-    minHeight: 44,
-    overflow: 'visible',
+    justifyContent: 'center',
   },
   todayCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: colors.textSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  todayText: {
     color: colors.white,
     fontWeight: '700',
-    borderRadius: 14,
-    overflow: 'hidden',
-    paddingHorizontal: 6,
-    paddingVertical: 6,
   },
   dayText: { fontSize: 14, color: colors.textSecondary, textAlign: 'center' },
   boldDay: { color: colors.white, fontWeight: '700' },
