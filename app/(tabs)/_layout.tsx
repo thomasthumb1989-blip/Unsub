@@ -7,7 +7,7 @@ import { colors } from '../../src/utils/theme';
 const TAB_ICONS: Record<string, string> = {
   index: '⊞',
   subscriptions: '☰',
-  calendar: '📅',
+  history: '✓',
   settings: '⚙',
 };
 
@@ -63,7 +63,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="subscriptions" />
-      <Tabs.Screen name="calendar" />
+      <Tabs.Screen name="history" />
       <Tabs.Screen name="settings" />
     </Tabs>
   );
