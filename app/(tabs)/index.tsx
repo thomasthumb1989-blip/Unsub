@@ -48,8 +48,8 @@ function DonutChart({ total, segments, currency }: {
         })}
       </Svg>
       <View style={styles.donutCenter}>
-        <Text style={styles.donutAmount}>{sym}{total.toFixed(2)}</Text>
-        <Text style={styles.donutLabel}>MONTHLY</Text>
+        <Text style={styles.donutAmount}>{sym}{total.toFixed(2)}{'  '}</Text>
+        <Text style={styles.donutLabel}>{'MONTHLY  '}</Text>
       </View>
     </View>
   );
@@ -103,16 +103,16 @@ export default function Dashboard() {
           <DonutChart total={monthlyTotal} segments={segments} currency={settings.currency} />
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Active</Text>
-              <Text style={styles.statValue}>{trials.length}</Text>
+              <Text style={styles.statLabel}>{'Active  '}</Text>
+              <Text style={styles.statValue}>{trials.length}{'  '}</Text>
             </View>
             <View style={[styles.statItem, styles.statBorder]}>
-              <Text style={styles.statLabel}>Highest</Text>
-              <Text style={styles.statValue}>{sym}{highest.toFixed(2)}</Text>
+              <Text style={styles.statLabel}>{'Highest  '}</Text>
+              <Text style={styles.statValue}>{sym}{highest.toFixed(2)}{'  '}</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Lowest</Text>
-              <Text style={styles.statValue}>{sym}{lowest.toFixed(2)}</Text>
+              <Text style={styles.statLabel}>{'Lowest  '}</Text>
+              <Text style={styles.statValue}>{sym}{lowest.toFixed(2)}{'  '}</Text>
             </View>
           </View>
         </View>
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   donutAmount: { fontSize: 28, fontWeight: '800', color: colors.white },
-  donutLabel: { fontSize: 11, color: colors.textSecondary, letterSpacing: 0.5, marginTop: 2 },
+  donutLabel: { fontSize: 11, color: colors.textSecondary, marginTop: 2 },
   statsRow: {
     flexDirection: 'row',
     marginTop: spacing.lg,
