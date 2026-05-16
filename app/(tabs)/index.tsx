@@ -98,6 +98,7 @@ export default function Dashboard() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll}>
+        <Text style={styles.brandLogo}>unsub</Text>
         <View style={styles.chartCard}>
           <DonutChart total={monthlyTotal} segments={segments} currency={settings.currency} />
           <View style={styles.statsRow}>
@@ -172,6 +173,14 @@ export default function Dashboard() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   scroll: { paddingBottom: 100 },
+  brandLogo: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#10B981',
+    letterSpacing: -1,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+  },
   chartCard: {
     backgroundColor: colors.card,
     borderRadius: 20,

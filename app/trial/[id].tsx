@@ -121,7 +121,7 @@ export default function TrialDetail() {
 
           <View style={styles.priceCard}>
             <Text style={styles.priceAmount}>{sym}{trial.chargeAmount.toFixed(2)}</Text>
-            <Text style={styles.priceCycle}>/{trial.cycle || 'month'}</Text>
+            <Text style={styles.priceCycle}> per {trial.cycle || 'month'}</Text>
           </View>
 
           <View style={[styles.countdownPill, { backgroundColor: urgencyColor + '20' }]}>

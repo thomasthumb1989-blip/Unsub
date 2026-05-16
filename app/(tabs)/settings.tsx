@@ -60,6 +60,7 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
+        <Text style={styles.brandLogo}>unsub</Text>
         <View style={styles.profileSection}>
           <View style={styles.avatarCircle}>
             <Text style={styles.avatarText}>
@@ -176,6 +177,14 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   scroll: { paddingBottom: 100 },
+  brandLogo: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#10B981',
+    letterSpacing: -1,
+    paddingHorizontal: 20,
+    paddingTop: spacing.md,
+  },
   profileSection: {
     alignItems: 'center',
     paddingTop: spacing.xl,
@@ -217,12 +226,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
   },
-  rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   rowIcon: { fontSize: 18 },
-  rowLabel: { fontSize: 16, fontWeight: '500', color: colors.white },
-  rowValue: { fontSize: 14, color: colors.textSecondary },
+  rowLabel: { fontSize: 16, fontWeight: '500', color: colors.white, flexShrink: 1 },
+  rowValue: { fontSize: 14, color: colors.textSecondary, flexShrink: 0 },
   rowArrow: { fontSize: 20, color: colors.textSecondary },
   divider: {
     height: 0.5,

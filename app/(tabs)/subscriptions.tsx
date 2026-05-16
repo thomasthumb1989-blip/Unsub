@@ -38,7 +38,7 @@ export default function Subscriptions() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Subscriptions</Text>
+        <Text style={styles.brandLogo}>unsub</Text>
         <View style={styles.headerIcons}>
           <Pressable onPress={() => setShowSearch(!showSearch)}>
             <Text style={styles.headerIcon}>🔍</Text>
@@ -116,7 +116,12 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: spacing.md,
   },
-  title: { fontSize: 24, fontWeight: '800', color: colors.accent },
+  brandLogo: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#10B981',
+    letterSpacing: -1,
+  },
   headerIcons: { flexDirection: 'row', gap: 16 },
   headerIcon: { fontSize: 18, color: colors.textSecondary },
   searchInput: {

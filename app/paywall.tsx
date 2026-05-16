@@ -9,14 +9,14 @@ const plans = [
   {
     id: 'weekly',
     label: 'Weekly',
-    price: '£3.99/week',
+    price: '£3.99 weekly',
     note: '3-day free trial',
     tag: 'Most Popular',
   },
   {
     id: 'yearly',
     label: 'Annual',
-    price: '£29.99/year',
+    price: '£29.99 yearly',
     note: 'Save 85%',
     tag: null,
   },

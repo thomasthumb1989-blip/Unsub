@@ -166,7 +166,7 @@ export default function AddTrial() {
                 >
                   <Text style={styles.suggestionName}>{s.name}</Text>
                   <Text style={styles.suggestionDetail}>
-                    £{s.chargeAmount}/mo
+                    £{s.chargeAmount} monthly
                   </Text>
                 </Pressable>
               ))}

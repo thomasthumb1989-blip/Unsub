@@ -160,8 +160,8 @@ function Screen5({ onSelect }: { onSelect: (names: string[]) => void }) {
 
 function PaywallScreen() {
   const plans = [
-    { id: 'weekly', label: 'Weekly', price: '£3.99/week', note: '3-day free trial', best: true },
-    { id: 'yearly', label: 'Annual', price: '£29.99/year', note: 'Save 85%' },
+    { id: 'weekly', label: 'Weekly', price: '£3.99 weekly', note: '3-day free trial', best: true },
+    { id: 'yearly', label: 'Annual', price: '£29.99 yearly', note: 'Save 85%' },
   ];
   const [selectedPlan, setSelectedPlan] = useState('weekly');
 

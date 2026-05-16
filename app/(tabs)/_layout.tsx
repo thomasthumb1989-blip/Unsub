@@ -19,29 +19,30 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   const midpoint = Math.floor(tabNames.length / 2);
 
   return (
-    <View style={[styles.tabBar, { paddingBottom: bottomPad }]}>
-      {state.routes.map((route: any, index: number) => {
-        const isFocused = state.index === index;
-        const icon = TAB_ICONS[route.name] || '•';
+    <View style={{ position: 'relative' }}>
+      <View style={styles.addButtonWrapper}>
+        <Pressable
+          style={styles.addButton}
+          onPress={() => router.push('/trial/add')}
+        >
+          <Text style={styles.addButtonText}>+</Text>
+        </Pressable>
+      </View>
+      <View style={[styles.tabBar, { paddingBottom: bottomPad }]}>
+        {state.routes.map((route: any, index: number) => {
+          const isFocused = state.index === index;
+          const icon = TAB_ICONS[route.name] || '•';
 
-        const onPress = () => {
-          const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name);
-          }
-        };
+          const onPress = () => {
+            const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name);
+            }
+          };
 
-        return (
-          <View key={route.key} style={styles.tabItemWrapper}>
-            {index === midpoint && (
-              <Pressable
-                style={styles.addButton}
-                onPress={() => router.push('/trial/add')}
-              >
-                <Text style={styles.addButtonText}>+</Text>
-              </Pressable>
-            )}
+          return (
             <Pressable
+              key={route.key}
               onPress={onPress}
               style={[styles.tabItem, isFocused && styles.tabItemActive]}
             >
@@ -49,9 +50,9 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
                 {icon}
               </Text>
             </Pressable>
-          </View>
-        );
-      })}
+          );
+        })}
+      </View>
     </View>
   );
 }
@@ -80,11 +81,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
   },
-  tabItemWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
   tabItem: {
     width: 44,
     height: 44,
@@ -102,11 +98,15 @@ const styles = StyleSheet.create({
   tabIconActive: {
     color: colors.white,
   },
-  addButton: {
+  addButtonWrapper: {
     position: 'absolute',
-    top: -30,
-    left: '50%',
-    transform: [{ translateX: -26 }],
+    bottom: 90,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  addButton: {
     width: 52,
     height: 52,
     borderRadius: 26,
@@ -118,7 +118,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
-    zIndex: 10,
   },
   addButtonText: {
     fontSize: 28,
