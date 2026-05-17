@@ -13,7 +13,6 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { v4 as uuidv4 } from 'uuid';
 import { addTrial, getSettings, getTrials, getCustomCategories } from '../../src/utils/storage';
 import { scheduleTrialReminders } from '../../src/utils/notifications';
 import { searchServices, ServiceInfo } from '../../src/data/services';
@@ -26,7 +25,7 @@ const DEFAULT_CATEGORIES = ['Music', 'Video', 'Cloud', 'Gaming', 'Software', 'En
 type Mode = 'trial' | 'subscription';
 
 export default function AddTrial() {
-  const [mode, setMode] = useState<Mode>('trial');
+  const [mode, setMode] = useState<Mode>('subscription');
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<ServiceInfo[]>([]);
   const [serviceName, setServiceName] = useState('');
@@ -41,6 +40,7 @@ export default function AddTrial() {
   const [reminders, setReminders] = useState({ '3day': true, '1day': true, '2hour': true });
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [nextBillDate, setNextBillDate] = useState('');
+  const [showIconPicker, setShowIconPicker] = useState(false);
   const [allCategories, setAllCategories] = useState<string[]>(DEFAULT_CATEGORIES);
 
   useEffect(() => {
@@ -69,7 +69,6 @@ export default function AddTrial() {
   const selectService = (s: ServiceInfo) => {
     setServiceName(s.name);
     setServiceIcon(s.icon);
-    setChargeAmount(s.chargeAmount.toString());
     setCancelUrl(s.cancelUrl);
     setTrialDays(s.trialDays);
     setCategory(s.category);
@@ -103,7 +102,7 @@ export default function AddTrial() {
     }
 
     const trial = {
-      id: uuidv4(),
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2),
       serviceName,
       serviceIcon,
       trialEndDate: endDate.toISOString(),
@@ -141,14 +140,6 @@ export default function AddTrial() {
 
           <View style={styles.modeToggle}>
             <Pressable
-              style={[styles.modeBtn, mode === 'trial' && styles.modeBtnActive]}
-              onPress={() => setMode('trial')}
-            >
-              <Text style={[styles.modeText, mode === 'trial' && styles.modeTextActive]}>
-                Free Trial
-              </Text>
-            </Pressable>
-            <Pressable
               style={[styles.modeBtn, mode === 'subscription' && styles.modeBtnActive]}
               onPress={() => setMode('subscription')}
             >
@@ -156,14 +147,36 @@ export default function AddTrial() {
                 Active Subscription
               </Text>
             </Pressable>
+            <Pressable
+              style={[styles.modeBtn, mode === 'trial' && styles.modeBtnActive]}
+              onPress={() => setMode('trial')}
+            >
+              <Text style={[styles.modeText, mode === 'trial' && styles.modeTextActive]}>
+                Free Trial
+              </Text>
+            </Pressable>
           </View>
 
-          <View style={styles.iconPicker}>
+          <Pressable style={styles.iconPicker} onPress={() => setShowIconPicker(!showIconPicker)}>
             <View style={styles.iconCircle}>
-              <Text style={styles.iconPlus}>+</Text>
+              <Text style={styles.iconDisplay}>{serviceIcon}</Text>
             </View>
             <Text style={styles.iconHint}>Tap to choose icon</Text>
-          </View>
+          </Pressable>
+
+          {showIconPicker && (
+            <View style={styles.emojiGrid}>
+              {['📱','🎵','🎬','☁️','🎮','💻','📺','🎧','📧','🛒','🏋️','🔒','📚','🎨','💬','📰','🍿','🎯','💡','🔔','📸','🚀','💳','🌐','❤️','⭐','🎁','🏠','✈️','🍕'].map((emoji) => (
+                <Pressable
+                  key={emoji}
+                  style={[styles.emojiBtn, serviceIcon === emoji && styles.emojiBtnActive]}
+                  onPress={() => { setServiceIcon(emoji); setShowIconPicker(false); }}
+                >
+                  <Text style={styles.emojiText}>{emoji}</Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
 
           <Text style={styles.label}>SUBSCRIPTION NAME</Text>
           <TextInput
@@ -183,9 +196,6 @@ export default function AddTrial() {
                   onPress={() => selectService(s)}
                 >
                   <Text style={styles.suggestionName}>{s.name}</Text>
-                  <Text style={styles.suggestionDetail}>
-                    £{s.chargeAmount} monthly
-                  </Text>
                 </Pressable>
               ))}
             </View>
@@ -388,7 +398,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 8,
   },
-  iconPlus: { fontSize: 28, color: colors.textSecondary },
+  iconDisplay: { fontSize: 28 },
+  emojiGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  emojiBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emojiBtnActive: {
+    borderColor: colors.accent,
+    backgroundColor: colors.accent + '20',
+  },
+  emojiText: { fontSize: 22 },
   iconHint: { fontSize: 13, color: colors.accent },
   label: {
     fontSize: 11,

@@ -132,7 +132,7 @@ export default function TrialDetail() {
         <View style={styles.center}>
           <ServiceLogo name={trial.serviceName} color={catColor} size={80} />
           <Text style={styles.name}>{trial.serviceName}</Text>
-          <Text style={styles.categoryLabel}>{trial.category || 'Other'}</Text>
+          <Text style={styles.categoryLabel}>{(trial.category || 'Other') + '  '}</Text>
 
           <Pressable
             style={styles.priceCard}
@@ -154,7 +154,7 @@ export default function TrialDetail() {
             ) : (
               <>
                 <Text style={styles.priceAmount}>{sym}{trial.chargeAmount.toFixed(2)}</Text>
-                <Text style={styles.priceCycle}> per {trial.cycle || 'month'}</Text>
+                <Text style={styles.priceCycle}>{' per ' + (trial.cycle && trial.cycle.length > 0 ? trial.cycle : 'month') + '  '}</Text>
                 <Ionicons name="pencil-outline" size={14} color={colors.textSecondary} style={{ marginLeft: 8 }} />
               </>
             )}
@@ -168,21 +168,21 @@ export default function TrialDetail() {
         <Text style={styles.sectionHeader}>DETAILS</Text>
         <View style={styles.detailCard}>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Next bill</Text>
+            <Text style={styles.detailLabel}>{'Next bill  '}</Text>
             <Text style={styles.detailValue}>
               {new Date(trial.trialEndDate).toLocaleDateString()}
             </Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Added</Text>
+            <Text style={styles.detailLabel}>{'Added  '}</Text>
             <Text style={styles.detailValue}>
               {new Date(trial.createdAt).toLocaleDateString()}
             </Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Reminders</Text>
+            <Text style={styles.detailLabel}>{'Reminders  '}</Text>
             <Text style={styles.detailValue}>
               {[
                 trial.reminders['3day'] && '3d',
@@ -257,18 +257,18 @@ export default function TrialDetail() {
           {trial.cancelUrl && (
             <Pressable style={styles.cancelNowBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); handleCancel(); }}>
               <Ionicons name="close-circle-outline" size={20} color={colors.white} />
-              <Text style={styles.cancelNowText}>Cancel Subscription</Text>
+              <Text style={styles.cancelNowText}>{'Cancel Subscription  '}</Text>
             </Pressable>
           )}
 
           <Pressable style={styles.cancelledBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); handleCancelled(); }}>
             <Ionicons name="checkmark-circle-outline" size={20} color={colors.white} />
-            <Text style={styles.cancelledText}>I've Cancelled</Text>
+            <Text style={styles.cancelledText}>{"I've Cancelled  "}</Text>
           </Pressable>
 
           <Pressable style={styles.deleteBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); handleDelete(); }}>
             <Ionicons name="trash-outline" size={18} color={colors.textSecondary} />
-            <Text style={styles.deleteText}>Delete</Text>
+            <Text style={styles.deleteText}>{'Delete  '}</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -304,10 +304,11 @@ const styles = StyleSheet.create({
   },
   name: { fontSize: 24, fontWeight: '800', color: colors.white },
   categoryLabel: {
-    fontSize: 13,
+    fontSize: 14,
     color: colors.textSecondary,
     marginTop: 4,
     textTransform: 'capitalize',
+    paddingRight: 8,
   },
   priceCard: {
     flexDirection: 'row',
@@ -315,7 +316,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   priceAmount: { fontSize: 36, fontWeight: '800', color: colors.white },
-  priceCycle: { fontSize: 16, color: colors.textSecondary },
+  priceCycle: { fontSize: 16, color: colors.textSecondary, paddingRight: 4 },
   priceEditRow: { flexDirection: 'row', alignItems: 'baseline' },
   priceEditInput: {
     fontSize: 36,
@@ -350,7 +351,6 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.lg,
     borderWidth: 0.5,
     borderColor: colors.cardBorder,
-    overflow: 'hidden',
   },
   detailRow: {
     flexDirection: 'row',
@@ -358,8 +358,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 20,
   },
-  detailLabel: { fontSize: 15, color: colors.textSecondary },
-  detailValue: { fontSize: 15, fontWeight: '600', color: colors.white },
+  detailLabel: { fontSize: 15, color: colors.textSecondary, flexShrink: 0, paddingRight: 4 },
+  detailValue: { fontSize: 15, fontWeight: '600', color: colors.white, flexShrink: 1, textAlign: 'right', paddingRight: 4 },
   divider: { height: 0.5, backgroundColor: colors.cardBorder, marginLeft: 20 },
   actions: {
     paddingHorizontal: spacing.lg,
@@ -438,5 +438,5 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: colors.cardBorder,
   },
-  deleteText: { fontSize: 15, color: colors.textSecondary },
+  deleteText: { fontSize: 15, color: colors.textSecondary, paddingRight: 4 },
 });

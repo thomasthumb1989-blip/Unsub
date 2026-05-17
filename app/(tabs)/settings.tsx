@@ -4,7 +4,7 @@ import { useFocusEffect, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import * as Notifications from 'expo-notifications';
+// expo-notifications lazy-loaded to avoid Expo Go crash on Android
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Settings, getSettings, saveSettings, getTrials, trialsToCSV } from '../../src/utils/storage';
 import { restorePurchases } from '../../src/utils/purchases';
@@ -31,7 +31,7 @@ function SettingRow({ icon, label, right, onPress }: {
     >
       <View style={styles.rowLeft}>
         <Ionicons name={icon} size={20} color={colors.accent} />
-        <Text style={styles.rowLabel}>{label}</Text>
+        <Text style={styles.rowLabel}>{label + '  '}</Text>
       </View>
       {right}
     </Pressable>
@@ -43,14 +43,20 @@ export default function SettingsScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
+  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       (async () => {
         const s = await getSettings();
         setSettings(s);
-        const { status } = await Notifications.getPermissionsAsync();
-        setNotificationsEnabled(status === 'granted');
+        try {
+          const Notifications = require('expo-notifications');
+          const { status } = await Notifications.getPermissionsAsync();
+          setNotificationsEnabled(status === 'granted');
+        } catch (e) {
+          setNotificationsEnabled(false);
+        }
       })();
     }, [])
   );
@@ -67,6 +73,7 @@ export default function SettingsScreen() {
 
   const handleNotifications = async (val: boolean) => {
     if (val) {
+      const Notifications = require('expo-notifications');
       const { status } = await Notifications.requestPermissionsAsync();
       if (status === 'granted') {
         setNotificationsEnabled(true);
@@ -166,21 +173,31 @@ export default function SettingsScreen() {
             icon="card-outline"
             label="Currency"
             right={
-              <View style={styles.currencyRow}>
-                {currencies.map((c) => (
-                  <Pressable
-                    key={c}
-                    style={[styles.currencyChip, settings.currency === c && styles.currencyChipActive]}
-                    onPress={() => handleCurrency(c)}
-                  >
-                    <Text style={[styles.currencyText, settings.currency === c && styles.currencyTextActive]}>
-                      {c}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
+              <Pressable
+                style={styles.currencySelector}
+                onPress={() => setShowCurrencyPicker(!showCurrencyPicker)}
+              >
+                <Text style={styles.currencySelectorText}>{settings.currency}</Text>
+                <Ionicons name={showCurrencyPicker ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textSecondary} />
+              </Pressable>
             }
           />
+          {showCurrencyPicker && (
+            <View style={styles.currencyDropdown}>
+              {currencies.map((c) => (
+                <Pressable
+                  key={c}
+                  style={[styles.currencyOption, settings.currency === c && styles.currencyOptionActive]}
+                  onPress={() => { handleCurrency(c); setShowCurrencyPicker(false); }}
+                >
+                  <Text style={[styles.currencyOptionText, settings.currency === c && styles.currencyOptionTextActive]}>
+                    {c}
+                  </Text>
+                  {settings.currency === c && <Ionicons name="checkmark" size={16} color={colors.accent} />}
+                </Pressable>
+              ))}
+            </View>
+          )}
         </Animated.View>
 
         <Text style={styles.sectionHeader}>PREFERENCES</Text>
@@ -386,7 +403,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 20,
   },
-  rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 1 },
   rowLabel: { fontSize: 16, fontWeight: '500', color: colors.white, flexShrink: 1 },
   rowValue: { fontSize: 14, color: colors.textSecondary, flexShrink: 0 },
   divider: {
@@ -394,16 +411,32 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cardBorder,
     marginLeft: 52,
   },
-  currencyRow: { flexDirection: 'row', gap: 6 },
-  currencyChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+  currencySelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     backgroundColor: 'rgba(255,255,255,0.05)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
   },
-  currencyChipActive: { backgroundColor: colors.accent },
-  currencyText: { fontSize: 12, fontWeight: '600', color: colors.textSecondary },
-  currencyTextActive: { color: colors.white },
+  currencySelectorText: { fontSize: 14, fontWeight: '600', color: colors.accent },
+  currencyDropdown: {
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
+  currencyOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginTop: 4,
+  },
+  currencyOptionActive: { backgroundColor: 'rgba(245,158,11,0.1)' },
+  currencyOptionText: { fontSize: 15, color: colors.textSecondary },
+  currencyOptionTextActive: { color: colors.accent, fontWeight: '600' },
   version: {
     textAlign: 'center',
     color: colors.textSecondary,

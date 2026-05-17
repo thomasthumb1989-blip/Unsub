@@ -54,10 +54,10 @@ export default function HistoryScreen() {
           end={{ x: 1, y: 1 }}
         >
           <Ionicons name="wallet-outline" size={24} color="#10B981" />
-          <Text style={styles.summaryLabel}>Total Saved</Text>
-          <Text style={styles.summaryAmount}>{sym}{totalSaved.toFixed(2)}</Text>
+          <Text style={styles.summaryLabel}>{'Total Saved  '}</Text>
+          <Text style={styles.summaryAmount}>{sym}{totalSaved.toFixed(2)}{'  '}</Text>
           <Text style={styles.summaryCount}>
-            {cancelled.length} subscription{cancelled.length !== 1 ? 's' : ''} cancelled
+            {cancelled.length + ' subscription' + (cancelled.length !== 1 ? 's' : '') + ' cancelled  '}
           </Text>
         </LinearGradient>
       </Animated.View>
@@ -130,16 +130,19 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 8,
     marginBottom: 4,
+    textAlign: 'center',
   },
   summaryAmount: {
     fontSize: 36,
     fontWeight: '800',
     color: '#10B981',
     marginBottom: 4,
+    textAlign: 'center',
   },
   summaryCount: {
     fontSize: 13,
     color: colors.textSecondary,
+    textAlign: 'center',
   },
   list: {
     paddingHorizontal: spacing.lg,

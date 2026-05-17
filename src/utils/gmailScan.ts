@@ -1,11 +1,6 @@
-import * as AuthSession from 'expo-auth-session';
-import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-WebBrowser.maybeCompleteAuthSession();
-
 // ── Config ──
-// Replace with your Google Cloud OAuth Client ID
 const GOOGLE_CLIENT_ID = '844730517869-e4tbp99plmfu9hvsu3p25e671hpgh90h.apps.googleusercontent.com';
 const GMAIL_SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
 const TOKEN_KEY = '@unsub_gmail_token';
@@ -86,19 +81,6 @@ export type DiscoveredSubscription = {
 };
 
 // ── Auth ──
-
-export function getGoogleAuthRequest() {
-  if (!GOOGLE_CLIENT_ID) return null;
-
-  return AuthSession.useAuthRequest(
-    {
-      clientId: GOOGLE_CLIENT_ID,
-      scopes: GMAIL_SCOPES,
-      redirectUri: AuthSession.makeRedirectUri({ scheme: 'unsub' }),
-    },
-    { authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth' }
-  );
-}
 
 export async function saveToken(token: string) {
   await AsyncStorage.setItem(TOKEN_KEY, token);

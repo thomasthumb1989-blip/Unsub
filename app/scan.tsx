@@ -14,10 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import * as AuthSession from 'expo-auth-session';
-import * as WebBrowser from 'expo-web-browser';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { v4 as uuidv4 } from 'uuid';
 import { colors, spacing } from '../src/utils/theme';
 import { useTheme } from '../src/contexts/ThemeContext';
 import { addTrial, getSettings } from '../src/utils/storage';
@@ -31,8 +28,6 @@ import {
   clearToken,
 } from '../src/utils/gmailScan';
 
-WebBrowser.maybeCompleteAuthSession();
-
 const GOOGLE_CLIENT_ID = '844730517869-e4tbp99plmfu9hvsu3p25e671hpgh90h.apps.googleusercontent.com';
 
 type ScanState = 'idle' | 'authenticating' | 'scanning' | 'results' | 'error';
@@ -44,26 +39,6 @@ export default function ScanScreen() {
   const [error, setError] = useState('');
   const [addedCount, setAddedCount] = useState(0);
   const { colors: tc } = useTheme();
-
-  const discovery = AuthSession.useAutoDiscovery('https://accounts.google.com');
-
-  const [request, response, promptAsync] = AuthSession.useAuthRequest(
-    {
-      clientId: GOOGLE_CLIENT_ID,
-      scopes: ['https://www.googleapis.com/auth/gmail.readonly'],
-      redirectUri: AuthSession.makeRedirectUri({ scheme: 'unsub' }),
-    },
-    discovery
-  );
-
-  useEffect(() => {
-    if (response?.type === 'success' && response.authentication?.accessToken) {
-      handleScanWithToken(response.authentication.accessToken);
-    } else if (response?.type === 'error') {
-      setState('error');
-      setError('Authentication failed. Please try again.');
-    }
-  }, [response]);
 
   const handleConnect = async () => {
     if (!GOOGLE_CLIENT_ID) {
@@ -84,7 +59,30 @@ export default function ScanScreen() {
       return;
     }
 
-    promptAsync();
+    try {
+      const AuthSession = require('expo-auth-session');
+      const WebBrowser = require('expo-web-browser');
+      WebBrowser.maybeCompleteAuthSession();
+
+      const redirectUri = AuthSession.makeRedirectUri({ scheme: 'unsub' });
+      const result = await AuthSession.startAsync({
+        authUrl:
+          `https://accounts.google.com/o/oauth2/v2/auth` +
+          `?client_id=${GOOGLE_CLIENT_ID}` +
+          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+          `&response_type=token` +
+          `&scope=${encodeURIComponent('https://www.googleapis.com/auth/gmail.readonly')}`,
+      });
+
+      if (result.type === 'success' && result.params?.access_token) {
+        handleScanWithToken(result.params.access_token);
+      } else {
+        setState('idle');
+      }
+    } catch (e: any) {
+      setState('error');
+      setError(e.message || 'Authentication failed');
+    }
   };
 
   const handleScanWithToken = async (token: string) => {
@@ -132,7 +130,7 @@ export default function ScanScreen() {
       endDate.setMonth(endDate.getMonth() + 1);
 
       await addTrial({
-        id: uuidv4(),
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2),
         serviceName: sub.name,
         serviceIcon: sub.name.charAt(0),
         trialEndDate: endDate.toISOString(),

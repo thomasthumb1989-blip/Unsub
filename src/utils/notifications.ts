@@ -1,22 +1,40 @@
-import * as Notifications from 'expo-notifications';
 import { Trial } from './storage';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// Lazy-load expo-notifications to avoid crash in Expo Go (SDK 53+ removed Android push from Expo Go)
+let Notifications: any = null;
+
+async function getNotifications() {
+  if (!Notifications) {
+    try {
+      Notifications = require('expo-notifications');
+      Notifications!.setNotificationHandler({
+        handleNotification: async () => ({
+          shouldShowAlert: true,
+          shouldPlaySound: true,
+          shouldSetBadge: true,
+          shouldShowBanner: true,
+          shouldShowList: true,
+        }),
+      });
+    } catch (e) {
+      console.warn('expo-notifications not available:', e);
+      return null;
+    }
+  }
+  return Notifications;
+}
 
 export async function requestPermissions() {
-  const { status } = await Notifications.requestPermissionsAsync();
+  const N = await getNotifications();
+  if (!N) return false;
+  const { status } = await N.requestPermissionsAsync();
   return status === 'granted';
 }
 
 export async function scheduleTrialReminders(trial: Trial) {
+  const N = await getNotifications();
+  if (!N) return;
+
   await cancelTrialReminders(trial.id);
 
   const endDate = new Date(trial.trialEndDate).getTime();
@@ -50,7 +68,7 @@ export async function scheduleTrialReminders(trial: Trial) {
     const triggerTime = endDate - reminder.offset;
     if (triggerTime <= Date.now()) continue;
 
-    await Notifications.scheduleNotificationAsync({
+    await N.scheduleNotificationAsync({
       content: {
         title: reminder.title,
         body: reminder.body,
@@ -58,7 +76,7 @@ export async function scheduleTrialReminders(trial: Trial) {
         sound: reminder.key === '2hour' ? 'default' : undefined,
       },
       trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        type: N.SchedulableTriggerInputTypes.DATE,
         date: new Date(triggerTime),
       },
       identifier: `${trial.id}_${reminder.key}`,
@@ -67,16 +85,22 @@ export async function scheduleTrialReminders(trial: Trial) {
 }
 
 export async function cancelTrialReminders(trialId: string) {
-  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  const N = await getNotifications();
+  if (!N) return;
+
+  const scheduled = await N.getAllScheduledNotificationsAsync();
   for (const notif of scheduled) {
     if (notif.identifier.startsWith(trialId)) {
-      await Notifications.cancelScheduledNotificationAsync(notif.identifier);
+      await N.cancelScheduledNotificationAsync(notif.identifier);
     }
   }
 }
 
 export async function scheduleWeeklyDigest(trials: Trial[]) {
-  await Notifications.cancelScheduledNotificationAsync('weekly_digest').catch(() => {});
+  const N = await getNotifications();
+  if (!N) return;
+
+  await N.cancelScheduledNotificationAsync('weekly_digest').catch(() => {});
 
   if (trials.length === 0) return;
 
@@ -98,13 +122,13 @@ export async function scheduleWeeklyDigest(trials: Trial[]) {
   const totalAtRisk = upcoming.reduce((sum, t) => sum + t.chargeAmount, 0);
   const sym = upcoming[0]?.currency === 'GBP' ? '£' : upcoming[0]?.currency === 'EUR' ? '€' : '$';
 
-  await Notifications.scheduleNotificationAsync({
+  await N.scheduleNotificationAsync({
     content: {
       title: `${upcoming.length} renewal${upcoming.length > 1 ? 's' : ''} this week`,
       body: `${sym}${totalAtRisk.toFixed(2)} in upcoming charges. Review in Unsub.`,
     },
     trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      type: N.SchedulableTriggerInputTypes.DATE,
       date: nextSunday,
     },
     identifier: 'weekly_digest',
@@ -112,7 +136,10 @@ export async function scheduleWeeklyDigest(trials: Trial[]) {
 }
 
 export async function scheduleMonthlyDigest(totalMonthly: number, currency: string, subCount: number) {
-  await Notifications.cancelScheduledNotificationAsync('monthly_digest').catch(() => {});
+  const N = await getNotifications();
+  if (!N) return;
+
+  await N.cancelScheduledNotificationAsync('monthly_digest').catch(() => {});
 
   if (subCount === 0) return;
 
@@ -120,13 +147,13 @@ export async function scheduleMonthlyDigest(totalMonthly: number, currency: stri
   const firstOfNext = new Date(now.getFullYear(), now.getMonth() + 1, 1, 9, 0, 0);
   const sym = currency === 'GBP' ? '£' : currency === 'EUR' ? '€' : '$';
 
-  await Notifications.scheduleNotificationAsync({
+  await N.scheduleNotificationAsync({
     content: {
       title: `Monthly recap: ${sym}${totalMonthly.toFixed(2)} in subscriptions`,
       body: `You have ${subCount} active subscription${subCount > 1 ? 's' : ''}. Time to review?`,
     },
     trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      type: N.SchedulableTriggerInputTypes.DATE,
       date: firstOfNext,
     },
     identifier: 'monthly_digest',

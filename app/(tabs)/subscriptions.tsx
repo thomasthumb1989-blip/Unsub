@@ -178,15 +178,15 @@ export default function Subscriptions() {
               >
                 <View style={styles.cardLeft}>
                   <ServiceLogo name={item.serviceName} color={catColor} />
-                  <View>
-                    <Text style={styles.cardName}>{item.serviceName}</Text>
-                    <Text style={styles.cardCategory}>{item.category || 'Other'}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.cardName}>{item.serviceName + '  '}</Text>
+                    <Text style={styles.cardCategory}>{(item.category || 'Other') + '  '}</Text>
                   </View>
                 </View>
                 <View style={styles.cardRight}>
                   <Text style={styles.cardAmount}>{sym}{item.chargeAmount.toFixed(2)}</Text>
                   <Text style={styles.cardCycle}>
-                    {item.status === 'cancelled' ? 'CANCELLED' : cycle.toUpperCase()}
+                    {(item.status === 'cancelled' ? 'CANCELLED' : (cycle || 'monthly').toUpperCase()) + '  '}
                   </Text>
                 </View>
               </Pressable>
@@ -202,8 +202,8 @@ export default function Subscriptions() {
         ListFooterComponent={
           filtered.length > 0 ? (
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Monthly Total ({filtered.length})</Text>
-              <Text style={styles.totalAmount}>{sym}{monthlyTotal.toFixed(2)}</Text>
+              <Text style={styles.totalLabel}>{'Monthly Total (' + filtered.length + ')  '}</Text>
+              <Text style={styles.totalAmount}>{sym}{monthlyTotal.toFixed(2)}{'  '}</Text>
             </View>
           ) : null
         }
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: colors.cardBorder,
   },
-  cardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  cardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   cardName: { fontSize: 16, fontWeight: '600', color: colors.white },
   cardCategory: { fontSize: 13, color: colors.textSecondary, marginTop: 2, textTransform: 'capitalize' },
   cardRight: { alignItems: 'flex-end' },

@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import Svg, { Circle } from 'react-native-svg';
+// SVG removed — using bar-based spend display
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Trial, getTrials, getSettings, trialsToShareText } from '../../src/utils/storage';
 import { colors, spacing, getCategoryColor, getCurrencySymbol, getUrgencyColor } from '../../src/utils/theme';
@@ -13,49 +13,36 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 import { ServiceLogo } from '../../src/components/ServiceLogo';
 import { getExchangeRates, convertCurrency, areRatesStale, refreshExchangeRates, ExchangeRates } from '../../src/utils/currency';
 
-function DonutChart({ total, segments, currency }: {
+function SpendRing({ total, segments, currency }: {
   total: number;
   segments: { value: number; color: string }[];
   currency: string;
 }) {
-  const size = 180;
-  const strokeWidth = 22;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const center = size / 2;
+  const width = 260;
+  const height = 100;
+  const barHeight = 8;
+  const barWidth = width - 40;
   const sym = getCurrencySymbol(currency);
-
   let accumulated = 0;
 
+  const formatAmount = (n: number) => {
+    if (n >= 10000) return `${sym}${(n / 1000).toFixed(1)}k`;
+    if (n >= 1000) return `${sym}${n.toFixed(0)}`;
+    return `${sym}${n.toFixed(2)}`;
+  };
+
   return (
-    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-      <Svg width={size} height={size}>
-        <Circle
-          cx={center} cy={center} r={radius}
-          stroke="rgba(255,255,255,0.05)"
-          strokeWidth={strokeWidth}
-          fill="none"
-        />
-        {segments.map((seg, i) => {
-          const segLength = total > 0 ? (seg.value / total) * circumference : 0;
-          const rotation = total > 0 ? (accumulated / total) * 360 - 90 : -90;
-          accumulated += seg.value;
-          return (
-            <Circle
-              key={i}
-              cx={center} cy={center} r={radius}
-              stroke={seg.color}
-              strokeWidth={strokeWidth}
-              fill="none"
-              strokeDasharray={`${segLength} ${circumference - segLength}`}
-              strokeLinecap="round"
-              transform={`rotate(${rotation} ${center} ${center})`}
-            />
-          );
-        })}
-      </Svg>
-      <View style={styles.donutCenter}>
-        <Text style={styles.donutAmount}>{sym}{total.toFixed(2)}</Text>
+    <View style={{ alignItems: 'center', paddingVertical: 16 }}>
+      <Text style={styles.spendAmount}>{formatAmount(total)}</Text>
+      <View style={styles.spendBarBg}>
+        <View style={{ flexDirection: 'row', height: barHeight, borderRadius: barHeight / 2, overflow: 'hidden', width: barWidth }}>
+          {segments.map((seg, i) => {
+            const pct = total > 0 ? (seg.value / total) * 100 : 0;
+            return (
+              <View key={i} style={{ width: `${pct}%`, backgroundColor: seg.color, height: barHeight }} />
+            );
+          })}
+        </View>
       </View>
     </View>
   );
@@ -155,22 +142,22 @@ export default function Dashboard() {
               </Pressable>
             </View>
 
-            <DonutChart total={displayTotal} segments={segments} currency={settings.currency} />
+            <SpendRing total={displayTotal} segments={segments} currency={settings.currency} />
 
-            <Text style={styles.donutLabel}>{viewMode === 'monthly' ? 'MONTHLY' : 'YEARLY'}</Text>
+            <Text style={styles.donutLabel}>{viewMode === 'monthly' ? 'MONTHLY  ' : 'YEARLY  '}</Text>
 
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Active</Text>
+                <Text style={styles.statLabel}>{'Active  '}</Text>
                 <Text style={styles.statValue}>{trials.length}</Text>
               </View>
               <View style={[styles.statItem, styles.statBorder]}>
-                <Text style={styles.statLabel}>Highest</Text>
-                <Text style={styles.statValue}>{sym}{highest.toFixed(2)}</Text>
+                <Text style={styles.statLabel}>{'Highest  '}</Text>
+                <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>{sym}{highest >= 1000 ? `${(highest/1000).toFixed(1)}k` : highest.toFixed(2)}</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Lowest</Text>
-                <Text style={styles.statValue}>{sym}{lowest.toFixed(2)}</Text>
+                <Text style={styles.statLabel}>{'Lowest  '}</Text>
+                <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>{sym}{lowest >= 1000 ? `${(lowest/1000).toFixed(1)}k` : lowest.toFixed(2)}</Text>
               </View>
             </View>
           </LinearGradient>
@@ -180,7 +167,7 @@ export default function Dashboard() {
           <Pressable style={{ flex: 1 }} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/(tabs)/subscriptions'); }}>
             <LinearGradient colors={['#1a1614', '#141416']} style={styles.summaryCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
               <Ionicons name="layers-outline" size={18} color={colors.accent} />
-              <Text style={styles.summaryLabel}>YOUR SUBS</Text>
+              <Text style={styles.summaryLabel}>{'YOUR SUBS  '}</Text>
               <View style={styles.summaryBottom}>
                 <Text style={styles.summaryValue}>{trials.length}</Text>
                 <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
@@ -190,7 +177,7 @@ export default function Dashboard() {
           <Pressable style={{ flex: 1 }} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/(tabs)/history'); }}>
             <LinearGradient colors={['#141618', '#141416']} style={styles.summaryCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
               <Ionicons name="time-outline" size={18} color={colors.accent} />
-              <Text style={styles.summaryLabel}>UPCOMING</Text>
+              <Text style={styles.summaryLabel}>{'UPCOMING  '}</Text>
               <View style={styles.summaryBottom}>
                 <Text style={styles.summaryValue}>{upcoming.length}</Text>
                 <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
@@ -212,13 +199,13 @@ export default function Dashboard() {
                     <View key={cat} style={styles.insightRow}>
                       <View style={styles.insightLeft}>
                         <View style={[styles.insightDot, { backgroundColor: getCategoryColor(cat) }]} />
-                        <Text style={styles.insightCat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</Text>
+                        <Text style={styles.insightCat} numberOfLines={1}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</Text>
                       </View>
                       <View style={styles.insightRight}>
                         <View style={styles.insightBarBg}>
-                          <View style={[styles.insightBarFill, { width: `${pct}%`, backgroundColor: getCategoryColor(cat) }]} />
+                          <View style={[styles.insightBarFill, { width: `${Math.min(pct, 80)}%`, backgroundColor: getCategoryColor(cat) }]} />
                         </View>
-                        <Text style={styles.insightAmount}>{sym}{displayAmount.toFixed(0)}</Text>
+                        <Text style={styles.insightAmount} numberOfLines={1}>{sym}{displayAmount >= 1000 ? `${(displayAmount/1000).toFixed(1)}k` : displayAmount.toFixed(0)}</Text>
                       </View>
                     </View>
                   );
@@ -239,30 +226,21 @@ export default function Dashboard() {
             const dueDate = new Date(trial.trialEndDate);
             const daysLeft = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
             const urgencyColor = getUrgencyColor(daysLeft);
-            const dueStr = daysLeft <= 0 ? 'Due today' : daysLeft === 1 ? 'Due tomorrow' : `Due in ${daysLeft} days`;
+            const dueStr = daysLeft <= 0 ? 'Today' : daysLeft === 1 ? 'Tomorrow' : `${daysLeft} days`;
             return (
               <Animated.View key={trial.id} entering={FadeInDown.duration(400).delay(300 + index * 100)}>
                 <Pressable
+                  style={styles.billCard}
                   onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push(`/trial/${trial.id}`); }}
                 >
-                  <LinearGradient colors={['#161516', '#121214']} style={styles.billCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                    <View style={styles.billLeft}>
-                      <ServiceLogo name={trial.serviceName} color={catColor} />
-                      <View>
-                        <Text style={styles.billName}>{trial.serviceName}</Text>
-                        <View style={styles.urgencyRow}>
-                          <View style={[styles.urgencyDot, { backgroundColor: urgencyColor }]} />
-                          <Text style={[styles.billDue, { color: urgencyColor }]}>{dueStr}</Text>
-                        </View>
-                      </View>
+                  <View style={styles.billLeft}>
+                    <ServiceLogo name={trial.serviceName} color={catColor} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.billName}>{trial.serviceName + '  '}</Text>
+                      <Text style={[styles.billDue, { color: urgencyColor }]}>{'• ' + dueStr + '  '}</Text>
                     </View>
-                    <View style={{ alignItems: 'flex-end' }}>
-                      <Text style={styles.billAmount}>{sym}{getHomeAmount(trial).toFixed(2)}</Text>
-                      {trial.currency && trial.currency !== homeCurrency && (
-                        <Text style={styles.billForeignCurrency}>{getCurrencySymbol(trial.currency)}{trial.chargeAmount.toFixed(2)} {trial.currency}</Text>
-                      )}
-                    </View>
-                  </LinearGradient>
+                  </View>
+                  <Text style={styles.billAmount}>{sym}{getHomeAmount(trial).toFixed(2)}</Text>
                 </Pressable>
               </Animated.View>
             );
@@ -335,16 +313,15 @@ const styles = StyleSheet.create({
   toggleTextActive: {
     color: colors.white,
   },
-  donutCenter: {
-    position: 'absolute',
-    top: 60,
-    left: 0,
-    right: 0,
-    bottom: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
+  spendAmount: { fontSize: 36, fontWeight: '800', color: colors.white, textAlign: 'center' },
+  spendBarBg: {
+    marginTop: 12,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    width: 220,
+    overflow: 'hidden',
   },
-  donutAmount: { fontSize: 28, fontWeight: '800', color: colors.white },
   donutLabel: { fontSize: 11, color: colors.textSecondary, marginTop: 8, letterSpacing: 1, paddingRight: 2 },
   statsRow: {
     flexDirection: 'row',
@@ -407,9 +384,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderWidth: 0.5,
     borderColor: colors.cardBorder,
-    overflow: 'hidden',
+    backgroundColor: colors.card,
   },
-  billLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  billLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   billName: { fontSize: 16, fontWeight: '600', color: colors.white },
   urgencyRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
   urgencyDot: { width: 6, height: 6, borderRadius: 3 },
@@ -430,7 +407,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  insightLeft: { flexDirection: 'row', alignItems: 'center', gap: 8, width: 100 },
+  insightLeft: { flexDirection: 'row', alignItems: 'center', gap: 8, width: 130 },
   insightDot: { width: 8, height: 8, borderRadius: 4 },
   insightCat: { fontSize: 12, color: colors.textSecondary, fontWeight: '500' },
   insightRight: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 8 },
@@ -442,7 +419,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   insightBarFill: { height: 6, borderRadius: 3 },
-  insightAmount: { fontSize: 12, fontWeight: '600', color: colors.white, width: 40, textAlign: 'right' },
+  insightAmount: { fontSize: 12, fontWeight: '600', color: colors.white, minWidth: 45, textAlign: 'right' },
   emptyState: { alignItems: 'center', paddingVertical: 40, gap: 12 },
   emptyText: { fontSize: 16, color: colors.textSecondary },
 });
