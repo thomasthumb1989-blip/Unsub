@@ -19,13 +19,15 @@
       "buildNumber": "1",
       "infoPlist": {
         "NSFaceIDUsageDescription": "Unsub uses Face ID to protect your subscription data with biometric lock.",
-        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalised ads to you."
+        "ITSAppUsesNonExemptEncryption": false
       },
       "privacyManifests": {
         "NSPrivacyAccessedAPITypes": [
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
-            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
           }
         ],
         "NSPrivacyCollectedDataTypes": [],
@@ -70,6 +72,13 @@
         }
       ],
       "expo-web-browser"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b31e1d43-da8d-4059-b94f-99179dba0419"
+      }
+    },
+    "owner": "biggdann89"
   }
 }
