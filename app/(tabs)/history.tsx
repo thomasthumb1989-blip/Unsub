@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -56,10 +57,11 @@ export default function HistoryScreen() {
         </LinearGradient>
       </Animated.View>
 
-      <FlatList
+      <FlashList
         data={cancelled}
         keyExtractor={(t) => t.id}
         contentContainerStyle={styles.list}
+        estimatedItemSize={68}
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
         renderItem={({ item, index }) => (
           <Animated.View entering={FadeInDown.duration(400).delay(100 + index * 80)}>

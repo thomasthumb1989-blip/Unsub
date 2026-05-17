@@ -27,20 +27,20 @@ export async function scheduleTrialReminders(trial: Trial) {
     {
       key: '3day',
       offset: 3 * 24 * 60 * 60 * 1000,
-      title: `⏰ ${trial.serviceName} trial ends in 3 days`,
-      body: `You'll be charged ${amount}. Cancel now to avoid the charge.`,
+      title: `${trial.serviceName} renews in 3 days`,
+      body: `You'll be charged ${amount}. Open Unsub to cancel or keep it.`,
     },
     {
       key: '1day',
       offset: 1 * 24 * 60 * 60 * 1000,
-      title: `🚨 ${trial.serviceName} charges you ${amount} tomorrow!`,
-      body: 'Cancel now before it\'s too late.',
+      title: `${trial.serviceName} charges ${amount} tomorrow`,
+      body: `Last full day to cancel. Tap to see how.`,
     },
     {
       key: '2hour',
       offset: 2 * 60 * 60 * 1000,
-      title: `🔴 LAST CHANCE: ${trial.serviceName} charges ${amount} in 2 hours!`,
-      body: 'This is your final reminder. Cancel now!',
+      title: `${trial.serviceName} charges in 2 hours`,
+      body: `Final reminder — ${amount} will be charged soon. Cancel now or ignore to keep.`,
     },
   ];
 
@@ -55,6 +55,7 @@ export async function scheduleTrialReminders(trial: Trial) {
         title: reminder.title,
         body: reminder.body,
         data: { trialId: trial.id },
+        sound: reminder.key === '2hour' ? 'default' : undefined,
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
@@ -74,25 +75,60 @@ export async function cancelTrialReminders(trialId: string) {
   }
 }
 
-export async function scheduleWeeklyDigest(trialCount: number) {
+export async function scheduleWeeklyDigest(trials: Trial[]) {
   await Notifications.cancelScheduledNotificationAsync('weekly_digest').catch(() => {});
 
-  if (trialCount === 0) return;
+  if (trials.length === 0) return;
 
   const now = new Date();
   const nextSunday = new Date(now);
   nextSunday.setDate(now.getDate() + ((7 - now.getDay()) % 7 || 7));
   nextSunday.setHours(10, 0, 0, 0);
 
+  const weekEnd = new Date(nextSunday);
+  weekEnd.setDate(weekEnd.getDate() + 7);
+
+  const upcoming = trials.filter((t) => {
+    const end = new Date(t.trialEndDate).getTime();
+    return end >= nextSunday.getTime() && end <= weekEnd.getTime();
+  });
+
+  if (upcoming.length === 0) return;
+
+  const totalAtRisk = upcoming.reduce((sum, t) => sum + t.chargeAmount, 0);
+  const sym = upcoming[0]?.currency === 'GBP' ? '£' : upcoming[0]?.currency === 'EUR' ? '€' : '$';
+
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: '📊 Weekly Trial Update',
-      body: `You have ${trialCount} trial${trialCount === 1 ? '' : 's'} expiring this week. Check Unsub to stay on top of them.`,
+      title: `${upcoming.length} renewal${upcoming.length > 1 ? 's' : ''} this week`,
+      body: `${sym}${totalAtRisk.toFixed(2)} in upcoming charges. Review in Unsub.`,
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
       date: nextSunday,
     },
     identifier: 'weekly_digest',
+  });
+}
+
+export async function scheduleMonthlyDigest(totalMonthly: number, currency: string, subCount: number) {
+  await Notifications.cancelScheduledNotificationAsync('monthly_digest').catch(() => {});
+
+  if (subCount === 0) return;
+
+  const now = new Date();
+  const firstOfNext = new Date(now.getFullYear(), now.getMonth() + 1, 1, 9, 0, 0);
+  const sym = currency === 'GBP' ? '£' : currency === 'EUR' ? '€' : '$';
+
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: `Monthly recap: ${sym}${totalMonthly.toFixed(2)} in subscriptions`,
+      body: `You have ${subCount} active subscription${subCount > 1 ? 's' : ''}. Time to review?`,
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date: firstOfNext,
+    },
+    identifier: 'monthly_digest',
   });
 }

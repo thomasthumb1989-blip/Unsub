@@ -102,7 +102,15 @@ export default function Dashboard() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.brandLogo}>Unsub</Text>
+        <View style={styles.topRow}>
+          <Text style={styles.brandLogo}>Unsub</Text>
+          <Pressable
+            style={styles.calendarBtn}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/calendar'); }}
+          >
+            <Ionicons name="calendar-outline" size={18} color={colors.textSecondary} />
+          </Pressable>
+        </View>
 
         <Animated.View entering={FadeInDown.duration(500).delay(100)}>
           <LinearGradient
@@ -166,6 +174,34 @@ export default function Dashboard() {
           </Pressable>
         </Animated.View>
 
+        {categoryMap.size > 0 && (
+          <>
+            <Text style={styles.sectionHeader}>SPENDING BREAKDOWN</Text>
+            <Animated.View entering={FadeInDown.duration(500).delay(250)} style={styles.insightsContainer}>
+              {Array.from(categoryMap.entries())
+                .sort((a, b) => b[1] - a[1])
+                .map(([cat, amount]) => {
+                  const displayAmount = viewMode === 'yearly' ? amount * 12 : amount;
+                  const pct = displayTotal > 0 ? (displayAmount / displayTotal) * 100 : 0;
+                  return (
+                    <View key={cat} style={styles.insightRow}>
+                      <View style={styles.insightLeft}>
+                        <View style={[styles.insightDot, { backgroundColor: getCategoryColor(cat) }]} />
+                        <Text style={styles.insightCat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</Text>
+                      </View>
+                      <View style={styles.insightRight}>
+                        <View style={styles.insightBarBg}>
+                          <View style={[styles.insightBarFill, { width: `${pct}%`, backgroundColor: getCategoryColor(cat) }]} />
+                        </View>
+                        <Text style={styles.insightAmount}>{sym}{displayAmount.toFixed(0)}</Text>
+                      </View>
+                    </View>
+                  );
+                })}
+            </Animated.View>
+          </>
+        )}
+
         <Text style={styles.sectionHeader}>UPCOMING BILLS</Text>
         {upcoming.length === 0 ? (
           <View style={styles.emptyState}>
@@ -209,13 +245,28 @@ export default function Dashboard() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   scroll: { paddingBottom: 100 },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+  },
   brandLogo: {
     fontSize: 22,
     fontWeight: '800',
     color: '#F59E0B',
     letterSpacing: -1,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
+  },
+  calendarBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    borderColor: colors.cardBorder,
   },
   chartCard: {
     borderRadius: 20,
@@ -328,6 +379,33 @@ const styles = StyleSheet.create({
   urgencyDot: { width: 6, height: 6, borderRadius: 3 },
   billDue: { fontSize: 13 },
   billAmount: { fontSize: 17, fontWeight: '700', color: colors.white },
+  insightsContainer: {
+    marginHorizontal: spacing.lg,
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 0.5,
+    borderColor: colors.cardBorder,
+    gap: 10,
+  },
+  insightRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  insightLeft: { flexDirection: 'row', alignItems: 'center', gap: 8, width: 100 },
+  insightDot: { width: 8, height: 8, borderRadius: 4 },
+  insightCat: { fontSize: 12, color: colors.textSecondary, fontWeight: '500' },
+  insightRight: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 8 },
+  insightBarBg: {
+    flex: 1,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    overflow: 'hidden',
+  },
+  insightBarFill: { height: 6, borderRadius: 3 },
+  insightAmount: { fontSize: 12, fontWeight: '600', color: colors.white, width: 40, textAlign: 'right' },
   emptyState: { alignItems: 'center', paddingVertical: 40, gap: 12 },
   emptyText: { fontSize: 16, color: colors.textSecondary },
 });

@@ -22,6 +22,7 @@ export type Settings = {
   onboardingComplete: boolean;
   darkMode: boolean;
   userName: string;
+  biometricLock: boolean;
 };
 
 const TRIALS_KEY = '@unsub_trials';
@@ -34,6 +35,7 @@ const DEFAULT_SETTINGS: Settings = {
   onboardingComplete: false,
   darkMode: true,
   userName: '',
+  biometricLock: false,
 };
 
 export async function getTrials(): Promise<Trial[]> {
@@ -77,4 +79,19 @@ export async function saveSettings(settings: Partial<Settings>) {
     SETTINGS_KEY,
     JSON.stringify({ ...current, ...settings })
   );
+}
+
+export function trialsToCSV(trials: Trial[]): string {
+  const headers = ['Service', 'Amount', 'Currency', 'Category', 'Cycle', 'End Date', 'Status', 'Created'];
+  const rows = trials.map((t) => [
+    t.serviceName,
+    t.chargeAmount.toFixed(2),
+    t.currency,
+    t.category || 'other',
+    t.cycle || 'monthly',
+    t.trialEndDate,
+    t.status,
+    t.createdAt,
+  ].map((v) => `"${v}"`).join(','));
+  return [headers.join(','), ...rows].join('\n');
 }

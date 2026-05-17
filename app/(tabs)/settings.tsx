@@ -6,9 +6,11 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import * as Notifications from 'expo-notifications';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Settings, getSettings, saveSettings } from '../../src/utils/storage';
+import { Settings, getSettings, saveSettings, getTrials, trialsToCSV } from '../../src/utils/storage';
 import { restorePurchases } from '../../src/utils/purchases';
 import { colors, spacing } from '../../src/utils/theme';
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
 
 function SettingRow({ icon, label, right, onPress }: {
   icon: keyof typeof Ionicons.glyphMap;
@@ -210,10 +212,43 @@ export default function SettingsScreen() {
           />
           <View style={styles.divider} />
           <SettingRow
+            icon="finger-print-outline"
+            label="Biometric Lock"
+            right={
+              <Switch
+                value={settings.biometricLock}
+                onValueChange={(val) => {
+                  saveSettings({ biometricLock: val });
+                  setSettings({ ...settings, biometricLock: val });
+                }}
+                trackColor={{ false: '#333', true: colors.accent }}
+                thumbColor={colors.white}
+              />
+            }
+          />
+          <View style={styles.divider} />
+          <SettingRow
             icon="lock-closed-outline"
             label="Privacy & Security"
             right={<Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />}
             onPress={() => router.push('/privacy')}
+          />
+        </Animated.View>
+
+        <Text style={styles.sectionHeader}>DATA</Text>
+        <Animated.View entering={FadeInDown.duration(500).delay(250)} style={styles.sectionCard}>
+          <SettingRow
+            icon="download-outline"
+            label="Export CSV"
+            right={<Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />}
+            onPress={async () => {
+              const trials = await getTrials();
+              if (trials.length === 0) { Alert.alert('No data', 'Add subscriptions first.'); return; }
+              const csv = trialsToCSV(trials);
+              const path = `${FileSystem.cacheDirectory}unsub-export.csv`;
+              await FileSystem.writeAsStringAsync(path, csv);
+              await Sharing.shareAsync(path, { mimeType: 'text/csv', dialogTitle: 'Export Subscriptions' });
+            }}
           />
         </Animated.View>
 
