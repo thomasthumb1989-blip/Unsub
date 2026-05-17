@@ -2,25 +2,12 @@ import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable, TextInput } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Trial, getTrials, getSettings } from '../../src/utils/storage';
 import { colors, spacing, getCategoryColor, getCurrencySymbol } from '../../src/utils/theme';
-
-function LetterAvatar({ name, color }: { name: string; color: string }) {
-  return (
-    <LinearGradient
-      colors={[color, `${color}99`]}
-      style={styles.avatar}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      <Text style={styles.avatarLetter}>{name.charAt(0).toUpperCase()}</Text>
-    </LinearGradient>
-  );
-}
+import { ServiceLogo } from '../../src/components/ServiceLogo';
 
 export default function Subscriptions() {
   const [trials, setTrials] = useState<Trial[]>([]);
@@ -82,7 +69,7 @@ export default function Subscriptions() {
                 onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push(`/trial/${item.id}`); }}
               >
                 <View style={styles.cardLeft}>
-                  <LetterAvatar name={item.serviceName} color={catColor} />
+                  <ServiceLogo name={item.serviceName} color={catColor} />
                   <View>
                     <Text style={styles.cardName}>{item.serviceName}</Text>
                     <Text style={styles.cardCategory}>{item.category || 'Other'}</Text>
@@ -164,14 +151,6 @@ const styles = StyleSheet.create({
     borderColor: colors.cardBorder,
   },
   cardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarLetter: { fontSize: 18, fontWeight: '700', color: colors.white },
   cardName: { fontSize: 16, fontWeight: '600', color: colors.white },
   cardCategory: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
   cardRight: { alignItems: 'flex-end' },

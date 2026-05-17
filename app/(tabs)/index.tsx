@@ -9,6 +9,7 @@ import Svg, { Circle } from 'react-native-svg';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Trial, getTrials, getSettings } from '../../src/utils/storage';
 import { colors, spacing, getCategoryColor, getCurrencySymbol, getUrgencyColor } from '../../src/utils/theme';
+import { ServiceLogo } from '../../src/components/ServiceLogo';
 
 function DonutChart({ total, segments, currency }: {
   total: number;
@@ -58,18 +59,6 @@ function DonutChart({ total, segments, currency }: {
   );
 }
 
-function LetterAvatar({ name, color }: { name: string; color: string }) {
-  return (
-    <LinearGradient
-      colors={[color, `${color}99`]}
-      style={styles.avatar}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      <Text style={styles.avatarLetter}>{name.charAt(0).toUpperCase()}</Text>
-    </LinearGradient>
-  );
-}
 
 export default function Dashboard() {
   const [trials, setTrials] = useState<Trial[]>([]);
@@ -197,7 +186,7 @@ export default function Dashboard() {
                   onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push(`/trial/${trial.id}`); }}
                 >
                   <View style={styles.billLeft}>
-                    <LetterAvatar name={trial.serviceName} color={catColor} />
+                    <ServiceLogo name={trial.serviceName} color={catColor} />
                     <View>
                       <Text style={styles.billName}>{trial.serviceName}</Text>
                       <View style={styles.urgencyRow}>
@@ -334,14 +323,6 @@ const styles = StyleSheet.create({
     borderColor: colors.cardBorder,
   },
   billLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarLetter: { fontSize: 18, fontWeight: '700', color: colors.white },
   billName: { fontSize: 16, fontWeight: '600', color: colors.white },
   urgencyRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
   urgencyDot: { width: 6, height: 6, borderRadius: 3 },

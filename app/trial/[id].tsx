@@ -20,14 +20,7 @@ import {
 } from '../../src/utils/storage';
 import { cancelTrialReminders } from '../../src/utils/notifications';
 import { colors, spacing, getCategoryColor, getUrgencyColor, getCurrencySymbol } from '../../src/utils/theme';
-
-function LetterAvatar({ name, color, size = 64 }: { name: string; color: string; size?: number }) {
-  return (
-    <View style={[styles.avatar, { backgroundColor: color, width: size, height: size, borderRadius: size * 0.25 }]}>
-      <Text style={[styles.avatarLetter, { fontSize: size * 0.4 }]}>{name.charAt(0).toUpperCase()}</Text>
-    </View>
-  );
-}
+import { ServiceLogo } from '../../src/components/ServiceLogo';
 
 export default function TrialDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -115,7 +108,7 @@ export default function TrialDetail() {
         </View>
 
         <View style={styles.center}>
-          <LetterAvatar name={trial.serviceName} color={catColor} size={80} />
+          <ServiceLogo name={trial.serviceName} color={catColor} size={80} />
           <Text style={styles.name}>{trial.serviceName}</Text>
           <Text style={styles.categoryLabel}>{trial.category || 'Other'}</Text>
 
@@ -195,8 +188,6 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xl,
     paddingHorizontal: spacing.lg,
   },
-  avatar: { alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
-  avatarLetter: { fontWeight: '700', color: colors.white },
   name: { fontSize: 24, fontWeight: '800', color: colors.white },
   categoryLabel: {
     fontSize: 13,
