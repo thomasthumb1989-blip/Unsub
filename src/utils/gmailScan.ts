@@ -6,7 +6,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 // ── Config ──
 // Replace with your Google Cloud OAuth Client ID
-const GOOGLE_CLIENT_ID = '';  // Will be set by user
+const GOOGLE_CLIENT_ID = '844730517869-e4tbp99plmfu9hvsu3p25e671hpgh90h.apps.googleusercontent.com';
 const GMAIL_SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
 const TOKEN_KEY = '@unsub_gmail_token';
 

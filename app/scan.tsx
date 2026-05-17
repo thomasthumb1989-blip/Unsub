@@ -33,7 +33,7 @@ import {
 
 WebBrowser.maybeCompleteAuthSession();
 
-const GOOGLE_CLIENT_ID = ''; // Set your client ID here too
+const GOOGLE_CLIENT_ID = '844730517869-e4tbp99plmfu9hvsu3p25e671hpgh90h.apps.googleusercontent.com';
 
 type ScanState = 'idle' | 'authenticating' | 'scanning' | 'results' | 'error';
 
