@@ -6,10 +6,10 @@
 Unsub: Subscription Tracker
 
 ### Subtitle (30 chars max)
-Cancel & Save on Recurring Bills
+Cancel, Save & Stop Overpaying
 
 ### Keywords (100 chars, comma-separated, not visible to users)
-subscription tracker,cancel subscriptions,free trial reminder,bill reminder,spending tracker,budget,recurring payments,manage subscriptions
+cancel,free trial,reminder,bills,expense,money,savings,budget,recurring,payments,spending,manage,renew
 
 ### Category
 Primary: Finance
