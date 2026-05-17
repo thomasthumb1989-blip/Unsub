@@ -7,10 +7,12 @@ import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { getCustomCategories, addCustomCategory, removeCustomCategory } from '../src/utils/storage';
 import { colors, spacing, categoryColors, getCategoryColor } from '../src/utils/theme';
+import { useTheme } from '../src/contexts/ThemeContext';
 
 const DEFAULT_CATEGORIES = Object.keys(categoryColors);
 
 export default function CategoriesScreen() {
+  const { colors: tc } = useTheme();
   const [custom, setCustom] = useState<string[]>([]);
   const [newCat, setNewCat] = useState('');
   const [showAdd, setShowAdd] = useState(false);
@@ -54,14 +56,14 @@ export default function CategoriesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: tc.bg }]} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
-          <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={22} color={colors.white} />
+          <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }} style={[styles.backBtn, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
+            <Ionicons name="arrow-back" size={22} color={tc.white} />
           </Pressable>
-          <Text style={styles.headerTitle}>Categories</Text>
-          <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShowAdd(!showAdd); }} style={styles.addBtn}>
+          <Text style={[styles.headerTitle, { color: tc.white }]}>Categories</Text>
+          <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShowAdd(!showAdd); }} style={[styles.addBtn, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
             <Ionicons name={showAdd ? 'close' : 'add'} size={22} color={colors.accent} />
           </Pressable>
         </View>
@@ -69,31 +71,31 @@ export default function CategoriesScreen() {
         {showAdd && (
           <Animated.View entering={FadeInDown.duration(300)} style={styles.addRow}>
             <TextInput
-              style={styles.addInput}
+              style={[styles.addInput, { backgroundColor: tc.card, borderColor: tc.cardBorder, color: tc.white }]}
               placeholder="New category name..."
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={tc.textSecondary}
               value={newCat}
               onChangeText={setNewCat}
               autoFocus
               onSubmitEditing={handleAdd}
             />
             <Pressable style={styles.addConfirmBtn} onPress={handleAdd}>
-              <Ionicons name="checkmark" size={20} color={colors.white} />
+              <Ionicons name="checkmark" size={20} color={tc.white} />
             </Pressable>
           </Animated.View>
         )}
 
-        <Text style={styles.sectionHeader}>DEFAULT CATEGORIES</Text>
-        <View style={styles.sectionCard}>
+        <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>DEFAULT CATEGORIES</Text>
+        <View style={[styles.sectionCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
           {DEFAULT_CATEGORIES.map((cat, i) => (
             <View key={cat}>
               {i > 0 && <View style={styles.divider} />}
               <View style={styles.catRow}>
                 <View style={styles.catLeft}>
                   <View style={[styles.catDot, { backgroundColor: getCategoryColor(cat) }]} />
-                  <Text style={styles.catName}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</Text>
+                  <Text style={[styles.catName, { color: tc.white }]}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</Text>
                 </View>
-                <Ionicons name="lock-closed-outline" size={14} color={colors.textSecondary} />
+                <Ionicons name="lock-closed-outline" size={14} color={tc.textSecondary} />
               </View>
             </View>
           ))}
@@ -101,15 +103,15 @@ export default function CategoriesScreen() {
 
         {custom.length > 0 && (
           <>
-            <Text style={styles.sectionHeader}>CUSTOM CATEGORIES</Text>
-            <View style={styles.sectionCard}>
+            <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>CUSTOM CATEGORIES</Text>
+            <View style={[styles.sectionCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
               {custom.map((cat, i) => (
                 <Animated.View key={cat} entering={FadeInDown.duration(300).delay(i * 50)}>
                   {i > 0 && <View style={styles.divider} />}
                   <View style={styles.catRow}>
                     <View style={styles.catLeft}>
                       <View style={[styles.catDot, { backgroundColor: colors.accent }]} />
-                      <Text style={styles.catName}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</Text>
+                      <Text style={[styles.catName, { color: tc.white }]}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</Text>
                     </View>
                     <Pressable onPress={() => handleDelete(cat)} hitSlop={8}>
                       <Ionicons name="trash-outline" size={16} color={colors.red} />
@@ -122,8 +124,8 @@ export default function CategoriesScreen() {
         )}
 
         <View style={styles.hint}>
-          <Ionicons name="information-circle-outline" size={16} color={colors.textSecondary} />
-          <Text style={styles.hintText}>Custom categories appear when adding subscriptions</Text>
+          <Ionicons name="information-circle-outline" size={16} color={tc.textSecondary} />
+          <Text style={[styles.hintText, { color: tc.textSecondary }]}>Custom categories appear when adding subscriptions</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

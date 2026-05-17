@@ -2,9 +2,11 @@ import { useEffect } from 'react';
 import { router } from 'expo-router';
 import { View, ActivityIndicator } from 'react-native';
 import { getSettings } from '../src/utils/storage';
-import { colors } from '../src/utils/theme';
+import { useTheme } from '../src/contexts/ThemeContext';
 
 export default function Index() {
+  const { colors: tc } = useTheme();
+
   useEffect(() => {
     (async () => {
       const settings = await getSettings();
@@ -17,8 +19,8 @@ export default function Index() {
   }, []);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg }}>
-      <ActivityIndicator size="large" color={colors.accent} />
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: tc.bg }}>
+      <ActivityIndicator size="large" color={tc.accent} />
     </View>
   );
 }

@@ -25,6 +25,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { colors, spacing, getCategoryColor, getUrgencyColor, getCurrencySymbol } from '../../src/utils/theme';
+import { useTheme } from '../../src/contexts/ThemeContext';
 import { ServiceLogo } from '../../src/components/ServiceLogo';
 import { getCancelGuide } from '../../src/data/cancelGuides';
 
@@ -35,6 +36,7 @@ export default function TrialDetail() {
   const [currency, setCurrency] = useState('GBP');
   const [editingPrice, setEditingPrice] = useState(false);
   const [priceInput, setPriceInput] = useState('');
+  const { colors: tc } = useTheme();
 
   useFocusEffect(
     useCallback(() => {
@@ -119,20 +121,20 @@ export default function TrialDetail() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: tc.bg }]} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
-          <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={22} color={colors.white} />
+          <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }} style={[styles.backBtn, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
+            <Ionicons name="arrow-back" size={22} color={tc.white} />
           </Pressable>
-          <Text style={styles.headerTitle}>Details</Text>
+          <Text style={[styles.headerTitle, { color: tc.white }]}>Details</Text>
           <View style={{ width: 36 }} />
         </View>
 
         <View style={styles.center}>
           <ServiceLogo name={trial.serviceName} color={catColor} size={80} />
-          <Text style={styles.name}>{trial.serviceName}</Text>
-          <Text style={styles.categoryLabel}>{(trial.category || 'Other') + '  '}</Text>
+          <Text style={[styles.name, { color: tc.white }]}>{trial.serviceName}</Text>
+          <Text style={[styles.categoryLabel, { color: tc.textSecondary }]}>{(trial.category || 'Other') + '  '}</Text>
 
           <Pressable
             style={styles.priceCard}
@@ -140,7 +142,7 @@ export default function TrialDetail() {
           >
             {editingPrice ? (
               <View style={styles.priceEditRow}>
-                <Text style={styles.priceAmount}>{sym}</Text>
+                <Text style={[styles.priceAmount, { color: tc.white }]}>{sym}</Text>
                 <TextInput
                   style={styles.priceEditInput}
                   value={priceInput}
@@ -153,9 +155,9 @@ export default function TrialDetail() {
               </View>
             ) : (
               <>
-                <Text style={styles.priceAmount}>{sym}{trial.chargeAmount.toFixed(2)}</Text>
-                <Text style={styles.priceCycle}>{' per ' + (trial.cycle && trial.cycle.length > 0 ? trial.cycle : 'month') + '  '}</Text>
-                <Ionicons name="pencil-outline" size={14} color={colors.textSecondary} style={{ marginLeft: 8 }} />
+                <Text style={[styles.priceAmount, { color: tc.white }]}>{sym}{trial.chargeAmount.toFixed(2)}</Text>
+                <Text style={[styles.priceCycle, { color: tc.textSecondary }]}>{' per ' + (trial.cycle && trial.cycle.length > 0 ? trial.cycle : 'month') + '  '}</Text>
+                <Ionicons name="pencil-outline" size={14} color={tc.textSecondary} style={{ marginLeft: 8 }} />
               </>
             )}
           </Pressable>
@@ -165,25 +167,25 @@ export default function TrialDetail() {
           </View>
         </View>
 
-        <Text style={styles.sectionHeader}>DETAILS</Text>
-        <View style={styles.detailCard}>
+        <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>DETAILS</Text>
+        <View style={[styles.detailCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{'Next bill  '}</Text>
-            <Text style={styles.detailValue}>
+            <Text style={[styles.detailLabel, { color: tc.textSecondary }]}>{'Next bill  '}</Text>
+            <Text style={[styles.detailValue, { color: tc.white }]}>
               {new Date(trial.trialEndDate).toLocaleDateString()}
             </Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{'Added  '}</Text>
-            <Text style={styles.detailValue}>
+            <Text style={[styles.detailLabel, { color: tc.textSecondary }]}>{'Added  '}</Text>
+            <Text style={[styles.detailValue, { color: tc.white }]}>
               {new Date(trial.createdAt).toLocaleDateString()}
             </Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{'Reminders  '}</Text>
-            <Text style={styles.detailValue}>
+            <Text style={[styles.detailLabel, { color: tc.textSecondary }]}>{'Reminders  '}</Text>
+            <Text style={[styles.detailValue, { color: tc.white }]}>
               {[
                 trial.reminders['3day'] && '3d',
                 trial.reminders['1day'] && '1d',
@@ -195,19 +197,19 @@ export default function TrialDetail() {
 
         {trial.priceHistory && trial.priceHistory.length > 0 && (
           <>
-            <Text style={styles.sectionHeader}>PRICE HISTORY</Text>
-            <View style={styles.detailCard}>
+            <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>PRICE HISTORY</Text>
+            <View style={[styles.detailCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
               {trial.priceHistory.map((change, i) => (
                 <View key={i}>
                   {i > 0 && <View style={styles.divider} />}
                   <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>
+                    <Text style={[styles.detailLabel, { color: tc.textSecondary }]}>
                       {new Date(change.date).toLocaleDateString()}
                     </Text>
                     <View style={styles.priceChangeRow}>
                       <Text style={styles.priceOld}>{sym}{change.oldAmount.toFixed(2)}</Text>
-                      <Ionicons name="arrow-forward" size={12} color={colors.textSecondary} />
-                      <Text style={[styles.detailValue, change.newAmount > change.oldAmount && { color: colors.red }, change.newAmount < change.oldAmount && { color: colors.success }]}>
+                      <Ionicons name="arrow-forward" size={12} color={tc.textSecondary} />
+                      <Text style={[styles.detailValue, { color: tc.white }, change.newAmount > change.oldAmount && { color: tc.red }, change.newAmount < change.oldAmount && { color: tc.success }]}>
                         {sym}{change.newAmount.toFixed(2)}
                       </Text>
                     </View>
@@ -223,19 +225,19 @@ export default function TrialDetail() {
           if (!guide) return null;
           return (
             <>
-              <Text style={styles.sectionHeader}>HOW TO CANCEL</Text>
-              <Animated.View entering={FadeInDown.duration(400)} style={styles.guideCard}>
+              <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>HOW TO CANCEL</Text>
+              <Animated.View entering={FadeInDown.duration(400)} style={[styles.guideCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
                 {guide.steps.map((step, i) => (
                   <View key={i} style={styles.guideStep}>
                     <View style={styles.guideStepNumber}>
                       <Text style={styles.guideStepNumText}>{i + 1}</Text>
                     </View>
-                    <Text style={styles.guideStepText}>{step}</Text>
+                    <Text style={[styles.guideStepText, { color: tc.textSecondary }]}>{step}</Text>
                   </View>
                 ))}
                 {guide.note && (
                   <View style={styles.guideNote}>
-                    <Ionicons name="information-circle-outline" size={16} color={colors.accent} />
+                    <Ionicons name="information-circle-outline" size={16} color={tc.accent} />
                     <Text style={styles.guideNoteText}>{guide.note}</Text>
                   </View>
                 )}
@@ -244,7 +246,7 @@ export default function TrialDetail() {
                     style={styles.guideLink}
                     onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); Linking.openURL(guide.url!); }}
                   >
-                    <Ionicons name="open-outline" size={16} color={colors.accent} />
+                    <Ionicons name="open-outline" size={16} color={tc.accent} />
                     <Text style={styles.guideLinkText}>Open cancellation page</Text>
                   </Pressable>
                 )}
@@ -256,19 +258,19 @@ export default function TrialDetail() {
         <View style={styles.actions}>
           {trial.cancelUrl && (
             <Pressable style={styles.cancelNowBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); handleCancel(); }}>
-              <Ionicons name="close-circle-outline" size={20} color={colors.white} />
+              <Ionicons name="close-circle-outline" size={20} color={tc.white} />
               <Text style={styles.cancelNowText}>{'Cancel Subscription  '}</Text>
             </Pressable>
           )}
 
           <Pressable style={styles.cancelledBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); handleCancelled(); }}>
-            <Ionicons name="checkmark-circle-outline" size={20} color={colors.white} />
+            <Ionicons name="checkmark-circle-outline" size={20} color={tc.white} />
             <Text style={styles.cancelledText}>{"I've Cancelled  "}</Text>
           </Pressable>
 
           <Pressable style={styles.deleteBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); handleDelete(); }}>
-            <Ionicons name="trash-outline" size={18} color={colors.textSecondary} />
-            <Text style={styles.deleteText}>{'Delete  '}</Text>
+            <Ionicons name="trash-outline" size={18} color={tc.textSecondary} />
+            <Text style={[styles.deleteText, { color: tc.textSecondary }]}>{'Delete  '}</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -440,3 +442,4 @@ const styles = StyleSheet.create({
   },
   deleteText: { fontSize: 15, color: colors.textSecondary, paddingRight: 4 },
 });
+

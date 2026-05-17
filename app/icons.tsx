@@ -68,11 +68,11 @@ export default function IconPickerScreen() {
         <View style={styles.header}>
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
-            style={styles.backBtn}
+            style={[styles.backBtn, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
           >
-            <Ionicons name="arrow-back" size={22} color={colors.white} />
+            <Ionicons name="arrow-back" size={22} color={tc.white} />
           </Pressable>
-          <Text style={styles.title}>App Icon</Text>
+          <Text style={[styles.title, { color: tc.white }]}>App Icon</Text>
           <View style={{ width: 36 }} />
         </View>
 
@@ -84,23 +84,23 @@ export default function IconPickerScreen() {
                 style={styles.previewImage}
               />
             </View>
-            <Text style={styles.previewName}>
+            <Text style={[styles.previewName, { color: tc.white }]}>
               {ICON_VARIANTS.find(v => v.key === activeIcon)?.name || 'Default'}
             </Text>
-            <Text style={styles.previewHint}>Choose your app icon below</Text>
+            <Text style={[styles.previewHint, { color: tc.textSecondary }]}>Choose your app icon below</Text>
           </View>
         </Animated.View>
 
-        <Text style={styles.sectionHeader}>COLORS</Text>
+        <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>COLORS</Text>
         <Animated.View entering={FadeInDown.duration(400).delay(100)} style={styles.grid}>
           {ICON_VARIANTS.filter(v => v.style === 'Lettermark' && v.bg === 'Dark').map((variant) => (
             <Pressable
               key={variant.key ?? 'default'}
-              style={[styles.iconCard, activeIcon === variant.key && styles.iconCardActive]}
+              style={[styles.iconCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }, activeIcon === variant.key && styles.iconCardActive]}
               onPress={() => handleSelect(variant)}
             >
               <Image source={variant.image} style={styles.iconImage} />
-              <Text style={[styles.iconName, activeIcon === variant.key && styles.iconNameActive]}>
+              <Text style={[styles.iconName, { color: tc.textSecondary }, activeIcon === variant.key && styles.iconNameActive]}>
                 {variant.name}
               </Text>
               {activeIcon === variant.key && (
@@ -112,16 +112,16 @@ export default function IconPickerScreen() {
           ))}
         </Animated.View>
 
-        <Text style={styles.sectionHeader}>STYLES</Text>
+        <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>STYLES</Text>
         <Animated.View entering={FadeInDown.duration(400).delay(200)} style={styles.grid}>
           {ICON_VARIANTS.filter(v => v.style !== 'Lettermark' || v.bg === 'Light').map((variant) => (
             <Pressable
               key={variant.key ?? 'default-style'}
-              style={[styles.iconCard, activeIcon === variant.key && styles.iconCardActive]}
+              style={[styles.iconCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }, activeIcon === variant.key && styles.iconCardActive]}
               onPress={() => handleSelect(variant)}
             >
               <Image source={variant.image} style={styles.iconImage} />
-              <Text style={[styles.iconName, activeIcon === variant.key && styles.iconNameActive]}>
+              <Text style={[styles.iconName, { color: tc.textSecondary }, activeIcon === variant.key && styles.iconNameActive]}>
                 {variant.name}
               </Text>
               {activeIcon === variant.key && (
@@ -134,7 +134,7 @@ export default function IconPickerScreen() {
         </Animated.View>
 
         {Platform.OS === 'web' && (
-          <Text style={styles.webNote}>
+          <Text style={[styles.webNote, { color: tc.textSecondary }]}>
             Icon switching only works on iOS and Android native builds.
           </Text>
         )}

@@ -85,15 +85,15 @@ export default function Subscriptions() {
         <View style={styles.headerActions}>
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShowSort(!showSort); setShowSearch(false); }}
-            style={[styles.actionBtn, showSort && styles.actionBtnActive]}
+            style={[styles.actionBtn, showSort && styles.actionBtnActive, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
           >
-            <Ionicons name="swap-vertical-outline" size={18} color={showSort ? colors.accent : colors.textSecondary} />
+            <Ionicons name="swap-vertical-outline" size={18} color={showSort ? tc.accent : tc.textSecondary} />
           </Pressable>
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShowSearch(!showSearch); setShowSort(false); }}
-            style={[styles.actionBtn, showSearch && styles.actionBtnActive]}
+            style={[styles.actionBtn, showSearch && styles.actionBtnActive, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
           >
-            <Ionicons name={showSearch ? 'close' : 'search'} size={18} color={showSearch ? colors.accent : colors.textSecondary} />
+            <Ionicons name={showSearch ? 'close' : 'search'} size={18} color={showSearch ? tc.accent : tc.textSecondary} />
           </Pressable>
         </View>
       </View>
@@ -102,10 +102,10 @@ export default function Subscriptions() {
         {(['active', 'cancelled', 'all'] as StatusFilter[]).map((s) => (
           <Pressable
             key={s}
-            style={[styles.statusChip, statusFilter === s && styles.statusChipActive]}
+            style={[styles.statusChip, statusFilter === s && styles.statusChipActive, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setStatusFilter(s); }}
           >
-            <Text style={[styles.statusChipText, statusFilter === s && styles.statusChipTextActive]}>
+            <Text style={[styles.statusChipText, statusFilter === s && styles.statusChipTextActive, { color: tc.textSecondary }]}>
               {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
             </Text>
           </Pressable>
@@ -114,9 +114,9 @@ export default function Subscriptions() {
 
       {showSearch && (
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { backgroundColor: tc.card, color: tc.white, borderColor: tc.cardBorder }]}
           placeholder="Search subscriptions..."
-          placeholderTextColor={colors.textSecondary}
+          placeholderTextColor={tc.textSecondary}
           value={search}
           onChangeText={setSearch}
           autoFocus
@@ -128,11 +128,11 @@ export default function Subscriptions() {
           {sortOptions.map((opt) => (
             <Pressable
               key={opt.mode}
-              style={[styles.sortChip, sortMode === opt.mode && styles.sortChipActive]}
+              style={[styles.sortChip, sortMode === opt.mode && styles.sortChipActive, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
               onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setSortMode(opt.mode); }}
             >
-              <Ionicons name={opt.icon} size={14} color={sortMode === opt.mode ? colors.accent : colors.textSecondary} />
-              <Text style={[styles.sortChipText, sortMode === opt.mode && styles.sortChipTextActive]}>{opt.label}</Text>
+              <Ionicons name={opt.icon} size={14} color={sortMode === opt.mode ? tc.accent : tc.textSecondary} />
+              <Text style={[styles.sortChipText, sortMode === opt.mode && styles.sortChipTextActive, { color: tc.textSecondary }]}>{opt.label}</Text>
             </Pressable>
           ))}
         </View>
@@ -141,19 +141,19 @@ export default function Subscriptions() {
       {categories.length > 1 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
           <Pressable
-            style={[styles.filterChip, !categoryFilter && styles.filterChipActive]}
+            style={[styles.filterChip, !categoryFilter && styles.filterChipActive, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setCategoryFilter(null); }}
           >
-            <Text style={[styles.filterChipText, !categoryFilter && styles.filterChipTextActive]}>All</Text>
+            <Text style={[styles.filterChipText, !categoryFilter && styles.filterChipTextActive, { color: tc.textSecondary }]}>All</Text>
           </Pressable>
           {categories.map((cat) => (
             <Pressable
               key={cat}
-              style={[styles.filterChip, categoryFilter === cat && styles.filterChipActive]}
+              style={[styles.filterChip, categoryFilter === cat && styles.filterChipActive, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
               onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setCategoryFilter(categoryFilter === cat ? null : cat); }}
             >
               <View style={[styles.filterDot, { backgroundColor: getCategoryColor(cat) }]} />
-              <Text style={[styles.filterChipText, categoryFilter === cat && styles.filterChipTextActive]}>
+              <Text style={[styles.filterChipText, categoryFilter === cat && styles.filterChipTextActive, { color: tc.textSecondary }]}>
                 {cat.charAt(0).toUpperCase() + cat.slice(1)}
               </Text>
             </Pressable>
@@ -173,19 +173,19 @@ export default function Subscriptions() {
           return (
             <Animated.View entering={FadeInDown.duration(400).delay(index * 60)}>
               <Pressable
-                style={styles.card}
+                style={[styles.card, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
                 onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push(`/trial/${item.id}`); }}
               >
                 <View style={styles.cardLeft}>
                   <ServiceLogo name={item.serviceName} color={catColor} />
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.cardName}>{item.serviceName + '  '}</Text>
-                    <Text style={styles.cardCategory}>{(item.category || 'Other') + '  '}</Text>
+                    <Text style={[styles.cardName, { color: tc.white }]}>{item.serviceName + '  '}</Text>
+                    <Text style={[styles.cardCategory, { color: tc.textSecondary }]}>{(item.category || 'Other') + '  '}</Text>
                   </View>
                 </View>
                 <View style={styles.cardRight}>
-                  <Text style={styles.cardAmount}>{sym}{item.chargeAmount.toFixed(2)}</Text>
-                  <Text style={styles.cardCycle}>
+                  <Text style={[styles.cardAmount, { color: tc.white }]}>{sym}{item.chargeAmount.toFixed(2)}</Text>
+                  <Text style={[styles.cardCycle, { color: tc.textSecondary }]}>
                     {(item.status === 'cancelled' ? 'CANCELLED' : (cycle || 'monthly').toUpperCase()) + '  '}
                   </Text>
                 </View>
@@ -195,15 +195,15 @@ export default function Subscriptions() {
         }}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Ionicons name="receipt-outline" size={40} color={colors.textSecondary} />
-            <Text style={styles.emptyText}>No subscriptions found</Text>
+            <Ionicons name="receipt-outline" size={40} color={tc.textSecondary} />
+            <Text style={[styles.emptyText, { color: tc.textSecondary }]}>No subscriptions found</Text>
           </View>
         }
         ListFooterComponent={
           filtered.length > 0 ? (
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>{'Monthly Total (' + filtered.length + ')  '}</Text>
-              <Text style={styles.totalAmount}>{sym}{monthlyTotal.toFixed(2)}{'  '}</Text>
+              <Text style={[styles.totalAmount, { color: tc.white }]}>{sym}{monthlyTotal.toFixed(2)}{'  '}</Text>
             </View>
           ) : null
         }

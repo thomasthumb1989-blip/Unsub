@@ -17,9 +17,10 @@ import { addTrial, getSettings, getTrials, getCustomCategories } from '../../src
 import { scheduleTrialReminders } from '../../src/utils/notifications';
 import { searchServices, ServiceInfo } from '../../src/data/services';
 import { colors, spacing, getCurrencySymbol } from '../../src/utils/theme';
+import { useTheme } from '../../src/contexts/ThemeContext';
 import { SUPPORTED_CURRENCIES, CURRENCY_SYMBOLS } from '../../src/utils/currency';
 
-const FREE_LIMIT = 3;
+const FREE_LIMIT = 4;
 const DEFAULT_CATEGORIES = ['Music', 'Video', 'Cloud', 'Gaming', 'Software', 'Entertainment', 'Lifestyle', 'Other'];
 
 type Mode = 'trial' | 'subscription';
@@ -42,6 +43,7 @@ export default function AddTrial() {
   const [nextBillDate, setNextBillDate] = useState('');
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [allCategories, setAllCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+  const { colors: tc } = useTheme();
 
   useEffect(() => {
     getCustomCategories().then((custom) => {
@@ -124,26 +126,26 @@ export default function AddTrial() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: tc.bg }]} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
-            <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }} style={styles.backBtn}>
-              <Ionicons name="arrow-back" size={22} color={colors.white} />
+            <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }} style={[styles.backBtn, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
+              <Ionicons name="arrow-back" size={22} color={tc.white} />
             </Pressable>
-            <Text style={styles.title}>Add Subscription</Text>
+            <Text style={[styles.title, { color: tc.white }]}>Add Subscription</Text>
             <View style={{ width: 36 }} />
           </View>
 
-          <View style={styles.modeToggle}>
+          <View style={[styles.modeToggle, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
             <Pressable
               style={[styles.modeBtn, mode === 'subscription' && styles.modeBtnActive]}
               onPress={() => setMode('subscription')}
             >
-              <Text style={[styles.modeText, mode === 'subscription' && styles.modeTextActive]}>
+              <Text style={[styles.modeText, { color: tc.textSecondary }, mode === 'subscription' && styles.modeTextActive]}>
                 Active Subscription
               </Text>
             </Pressable>
@@ -151,7 +153,7 @@ export default function AddTrial() {
               style={[styles.modeBtn, mode === 'trial' && styles.modeBtnActive]}
               onPress={() => setMode('trial')}
             >
-              <Text style={[styles.modeText, mode === 'trial' && styles.modeTextActive]}>
+              <Text style={[styles.modeText, { color: tc.textSecondary }, mode === 'trial' && styles.modeTextActive]}>
                 Free Trial
               </Text>
             </Pressable>
@@ -178,41 +180,41 @@ export default function AddTrial() {
             </View>
           )}
 
-          <Text style={styles.label}>SUBSCRIPTION NAME</Text>
+          <Text style={[styles.label, { color: tc.sectionHeader }]}>SUBSCRIPTION NAME</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: tc.card, borderColor: tc.cardBorder, color: tc.white }]}
             placeholder="e.g. Netflix, Spotify..."
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor={tc.textSecondary}
             value={query}
             onChangeText={handleSearch}
           />
 
           {showSuggestions && suggestions.length > 0 && (
-            <View style={styles.suggestionsBox}>
+            <View style={[styles.suggestionsBox, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
               {suggestions.map((s) => (
                 <Pressable
                   key={s.name}
-                  style={styles.suggestionRow}
+                  style={[styles.suggestionRow, { borderBottomColor: tc.cardBorder }]}
                   onPress={() => selectService(s)}
                 >
-                  <Text style={styles.suggestionName}>{s.name}</Text>
+                  <Text style={[styles.suggestionName, { color: tc.white }]}>{s.name}</Text>
                 </Pressable>
               ))}
             </View>
           )}
 
-          <Text style={styles.label}>
+          <Text style={[styles.label, { color: tc.sectionHeader }]}>
             {mode === 'trial' ? 'PRICE AFTER TRIAL' : 'MONTHLY PRICE'}
           </Text>
-          <View style={styles.priceRow}>
-            <Pressable onPress={() => setShowCurrencyPicker(!showCurrencyPicker)} style={styles.currencyToggle}>
-              <Text style={styles.priceSymbol}>{CURRENCY_SYMBOLS[subCurrency] || subCurrency}</Text>
-              <Ionicons name="chevron-down" size={12} color={colors.textSecondary} />
+          <View style={[styles.priceRow, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
+            <Pressable onPress={() => setShowCurrencyPicker(!showCurrencyPicker)} style={[styles.currencyToggle, { borderRightColor: tc.cardBorder }]}>
+              <Text style={[styles.priceSymbol, { color: tc.textSecondary }]}>{CURRENCY_SYMBOLS[subCurrency] || subCurrency}</Text>
+              <Ionicons name="chevron-down" size={12} color={tc.textSecondary} />
             </Pressable>
             <TextInput
-              style={styles.priceInput}
+              style={[styles.priceInput, { color: tc.white }]}
               placeholder="0.00"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={tc.textSecondary}
               value={chargeAmount}
               onChangeText={setChargeAmount}
               keyboardType="decimal-pad"
@@ -223,10 +225,10 @@ export default function AddTrial() {
               {SUPPORTED_CURRENCIES.slice(0, 8).map((c) => (
                 <Pressable
                   key={c}
-                  style={[styles.currencyOption, subCurrency === c && styles.currencyOptionActive]}
+                  style={[styles.currencyOption, { backgroundColor: tc.card, borderColor: tc.cardBorder }, subCurrency === c && styles.currencyOptionActive]}
                   onPress={() => { setSubCurrency(c); setShowCurrencyPicker(false); }}
                 >
-                  <Text style={[styles.currencyOptionText, subCurrency === c && styles.currencyOptionTextActive]}>
+                  <Text style={[styles.currencyOptionText, { color: tc.textSecondary }, subCurrency === c && styles.currencyOptionTextActive]}>
                     {CURRENCY_SYMBOLS[c]} {c}
                   </Text>
                 </Pressable>
@@ -234,15 +236,15 @@ export default function AddTrial() {
             </View>
           )}
 
-          <Text style={styles.label}>CATEGORY</Text>
+          <Text style={[styles.label, { color: tc.sectionHeader }]}>CATEGORY</Text>
           <View style={styles.categoryGrid}>
             {allCategories.map((c) => (
               <Pressable
                 key={c}
-                style={[styles.categoryChip, category === c && styles.categoryChipActive]}
+                style={[styles.categoryChip, { backgroundColor: tc.card, borderColor: tc.cardBorder }, category === c && styles.categoryChipActive]}
                 onPress={() => setCategory(c)}
               >
-                <Text style={[styles.categoryText, category === c && styles.categoryTextActive]}>
+                <Text style={[styles.categoryText, { color: tc.textSecondary }, category === c && styles.categoryTextActive]}>
                   {c}
                 </Text>
               </Pressable>
@@ -251,12 +253,12 @@ export default function AddTrial() {
 
           <View style={styles.twoCol}>
             <View style={styles.colHalf}>
-              <Text style={styles.label}>CYCLE</Text>
+              <Text style={[styles.label, { color: tc.sectionHeader }]}>CYCLE</Text>
               <Pressable
-                style={styles.selectBox}
+                style={[styles.selectBox, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
                 onPress={() => setCycle(cycle === 'monthly' ? 'yearly' : 'monthly')}
               >
-                <Text style={styles.selectText}>
+                <Text style={[styles.selectText, { color: tc.white }]}>
                   {cycle === 'monthly' ? 'Monthly' : 'Yearly'}
                 </Text>
               </Pressable>
@@ -264,27 +266,27 @@ export default function AddTrial() {
             <View style={styles.colHalf}>
               {mode === 'trial' ? (
                 <>
-                  <Text style={styles.label}>TRIAL DAYS</Text>
-                  <View style={styles.selectBox}>
+                  <Text style={[styles.label, { color: tc.sectionHeader }]}>TRIAL DAYS</Text>
+                  <View style={[styles.selectBox, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
                     <TextInput
-                      style={styles.selectText}
+                      style={[styles.selectText, { color: tc.white }]}
                       value={trialDays.toString()}
                       onChangeText={(t) => setTrialDays(parseInt(t) || 0)}
                       keyboardType="number-pad"
-                      placeholderTextColor={colors.textSecondary}
+                      placeholderTextColor={tc.textSecondary}
                     />
                   </View>
                 </>
               ) : (
                 <>
-                  <Text style={styles.label}>NEXT BILL (DD/MM)</Text>
-                  <View style={styles.selectBox}>
+                  <Text style={[styles.label, { color: tc.sectionHeader }]}>NEXT BILL (DD/MM)</Text>
+                  <View style={[styles.selectBox, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
                     <TextInput
-                      style={styles.selectText}
+                      style={[styles.selectText, { color: tc.white }]}
                       value={nextBillDate}
                       onChangeText={setNextBillDate}
                       placeholder="2026-06-15"
-                      placeholderTextColor={colors.textSecondary}
+                      placeholderTextColor={tc.textSecondary}
                     />
                   </View>
                 </>
@@ -292,11 +294,11 @@ export default function AddTrial() {
             </View>
           </View>
 
-          <Text style={styles.label}>CANCEL URL (OPTIONAL)</Text>
+          <Text style={[styles.label, { color: tc.sectionHeader }]}>CANCEL URL (OPTIONAL)</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: tc.card, borderColor: tc.cardBorder, color: tc.white }]}
             placeholder="https://..."
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor={tc.textSecondary}
             value={cancelUrl}
             onChangeText={setCancelUrl}
             autoCapitalize="none"
@@ -305,16 +307,16 @@ export default function AddTrial() {
 
           {mode === 'trial' && (
             <>
-              <Text style={styles.label}>REMINDERS</Text>
+              <Text style={[styles.label, { color: tc.sectionHeader }]}>REMINDERS</Text>
               {(['3day', '1day', '2hour'] as const).map((key, index) => {
                 const labels = { '3day': '3 days before', '1day': '1 day before', '2hour': '2 hours before' };
                 return (
                   <Pressable
                     key={key}
-                    style={[styles.reminderRow, index > 0 && { marginTop: 8 }]}
+                    style={[styles.reminderRow, { backgroundColor: tc.card, borderColor: tc.cardBorder }, index > 0 && { marginTop: 8 }]}
                     onPress={() => setReminders({ ...reminders, [key]: !reminders[key] })}
                   >
-                    <Text style={styles.reminderText}>{labels[key]}</Text>
+                    <Text style={[styles.reminderText, { color: tc.white }]}>{labels[key]}</Text>
                     <View style={[styles.checkbox, reminders[key] && styles.checkboxActive]}>
                       {reminders[key] && <Text style={styles.checkMark}>✓</Text>}
                     </View>

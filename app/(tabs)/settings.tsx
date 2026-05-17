@@ -13,11 +13,12 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 
-function SettingRow({ icon, label, right, onPress }: {
+function SettingRow({ icon, label, right, onPress, tc }: {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   right?: React.ReactNode;
   onPress?: () => void;
+  tc: any;
 }) {
   return (
     <Pressable
@@ -30,8 +31,8 @@ function SettingRow({ icon, label, right, onPress }: {
       }}
     >
       <View style={styles.rowLeft}>
-        <Ionicons name={icon} size={20} color={colors.accent} />
-        <Text style={styles.rowLabel}>{label + '  '}</Text>
+        <Ionicons name={icon} size={20} color={tc.accent} />
+        <Text style={[styles.rowLabel, { color: tc.white }]}>{label + '  '}</Text>
       </View>
       {right}
     </Pressable>
@@ -60,6 +61,8 @@ export default function SettingsScreen() {
       })();
     }, [])
   );
+
+  const { toggle: toggleTheme, colors: tc } = useTheme();
 
   if (!settings) return null;
 
@@ -112,8 +115,6 @@ export default function SettingsScreen() {
     }
   };
 
-  const { toggle: toggleTheme, colors: tc } = useTheme();
-
   const handleDarkMode = (val: boolean) => {
     toggleTheme();
     setSettings({ ...settings, darkMode: val });
@@ -125,7 +126,7 @@ export default function SettingsScreen() {
         <Text style={styles.brandLogo}>Unsub</Text>
 
         <Animated.View entering={FadeInDown.duration(500)} style={styles.profileSection}>
-          <View style={styles.avatarCircle}>
+          <View style={[styles.avatarCircle, { backgroundColor: tc.card }]}>
             <Text style={styles.avatarText}>
               {(settings.userName || 'U').charAt(0).toUpperCase()}
             </Text>
@@ -133,11 +134,11 @@ export default function SettingsScreen() {
           {editingName ? (
             <View style={styles.nameEditRow}>
               <TextInput
-                style={styles.nameInput}
+                style={[styles.nameInput, { color: tc.white }]}
                 value={nameInput}
                 onChangeText={setNameInput}
                 placeholder="Enter your name"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={tc.textSecondary}
                 autoFocus
                 onSubmitEditing={() => {
                   if (nameInput.trim()) {
@@ -150,23 +151,24 @@ export default function SettingsScreen() {
             </View>
           ) : (
             <Pressable onPress={() => { setNameInput(settings.userName || ''); setEditingName(true); }}>
-              <Text style={styles.profileName}>{settings.userName || 'Tap to set name'}</Text>
+              <Text style={[styles.profileName, { color: tc.white }]}>{settings.userName || 'Tap to set name'}</Text>
             </Pressable>
           )}
           <View style={styles.planBadge}>
-            <Ionicons name={settings.isPremium ? 'diamond' : 'sparkles-outline'} size={14} color={settings.isPremium ? '#F59E0B' : colors.textSecondary} />
+            <Ionicons name={settings.isPremium ? 'diamond' : 'sparkles-outline'} size={14} color={settings.isPremium ? '#F59E0B' : tc.textSecondary} />
             <Text style={[styles.planText, settings.isPremium && { color: '#F59E0B' }]}>
               {settings.isPremium ? 'Premium' : 'Free Plan'}
             </Text>
           </View>
         </Animated.View>
 
-        <Text style={styles.sectionHeader}>ACCOUNT</Text>
-        <Animated.View entering={FadeInDown.duration(500).delay(100)} style={styles.sectionCard}>
+        <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>ACCOUNT</Text>
+        <Animated.View entering={FadeInDown.duration(500).delay(100)} style={[styles.sectionCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
           <SettingRow
             icon="person-outline"
             label="Profile Info"
-            right={<Text style={styles.rowValue}>{settings.isPremium ? 'Premium' : 'Free Plan'}</Text>}
+            right={<Text style={[styles.rowValue, { color: tc.textSecondary }]}>{settings.isPremium ? 'Premium' : 'Free Plan'}</Text>}
+            tc={tc}
           />
           <View style={styles.divider} />
           <SettingRow
@@ -178,9 +180,10 @@ export default function SettingsScreen() {
                 onPress={() => setShowCurrencyPicker(!showCurrencyPicker)}
               >
                 <Text style={styles.currencySelectorText}>{settings.currency}</Text>
-                <Ionicons name={showCurrencyPicker ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textSecondary} />
+                <Ionicons name={showCurrencyPicker ? 'chevron-up' : 'chevron-down'} size={14} color={tc.textSecondary} />
               </Pressable>
             }
+            tc={tc}
           />
           {showCurrencyPicker && (
             <View style={styles.currencyDropdown}>
@@ -190,18 +193,18 @@ export default function SettingsScreen() {
                   style={[styles.currencyOption, settings.currency === c && styles.currencyOptionActive]}
                   onPress={() => { handleCurrency(c); setShowCurrencyPicker(false); }}
                 >
-                  <Text style={[styles.currencyOptionText, settings.currency === c && styles.currencyOptionTextActive]}>
+                  <Text style={[styles.currencyOptionText, { color: tc.textSecondary }, settings.currency === c && styles.currencyOptionTextActive]}>
                     {c}
                   </Text>
-                  {settings.currency === c && <Ionicons name="checkmark" size={16} color={colors.accent} />}
+                  {settings.currency === c && <Ionicons name="checkmark" size={16} color={tc.accent} />}
                 </Pressable>
               ))}
             </View>
           )}
         </Animated.View>
 
-        <Text style={styles.sectionHeader}>PREFERENCES</Text>
-        <Animated.View entering={FadeInDown.duration(500).delay(200)} style={styles.sectionCard}>
+        <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>PREFERENCES</Text>
+        <Animated.View entering={FadeInDown.duration(500).delay(200)} style={[styles.sectionCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
           <SettingRow
             icon="notifications-outline"
             label="Notifications"
@@ -209,10 +212,11 @@ export default function SettingsScreen() {
               <Switch
                 value={notificationsEnabled}
                 onValueChange={handleNotifications}
-                trackColor={{ false: '#333', true: colors.accent }}
-                thumbColor={colors.white}
+                trackColor={{ false: tc.cardBorder, true: tc.accent }}
+                thumbColor={tc.white}
               />
             }
+            tc={tc}
           />
           <View style={styles.divider} />
           <SettingRow
@@ -222,10 +226,11 @@ export default function SettingsScreen() {
               <Switch
                 value={settings.darkMode}
                 onValueChange={handleDarkMode}
-                trackColor={{ false: '#333', true: colors.accent }}
-                thumbColor={colors.white}
+                trackColor={{ false: tc.cardBorder, true: tc.accent }}
+                thumbColor={tc.white}
               />
             }
+            tc={tc}
           />
           <View style={styles.divider} />
           <SettingRow
@@ -238,47 +243,53 @@ export default function SettingsScreen() {
                   saveSettings({ biometricLock: val });
                   setSettings({ ...settings, biometricLock: val });
                 }}
-                trackColor={{ false: '#333', true: colors.accent }}
-                thumbColor={colors.white}
+                trackColor={{ false: tc.cardBorder, true: tc.accent }}
+                thumbColor={tc.white}
               />
             }
+            tc={tc}
           />
           <View style={styles.divider} />
           <SettingRow
             icon="apps-outline"
             label="App Icon"
-            right={<Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />}
+            right={<Ionicons name="chevron-forward" size={18} color={tc.textSecondary} />}
             onPress={() => router.push('/icons')}
+            tc={tc}
           />
           <View style={styles.divider} />
           <SettingRow
             icon="lock-closed-outline"
             label="Privacy & Security"
-            right={<Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />}
+            right={<Ionicons name="chevron-forward" size={18} color={tc.textSecondary} />}
             onPress={() => router.push('/privacy')}
+            tc={tc}
           />
         </Animated.View>
 
-        <Text style={styles.sectionHeader}>DATA</Text>
-        <Animated.View entering={FadeInDown.duration(500).delay(250)} style={styles.sectionCard}>
+        <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>DATA</Text>
+        <Animated.View entering={FadeInDown.duration(500).delay(250)} style={[styles.sectionCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
           <SettingRow
             icon="pricetags-outline"
             label="Manage Categories"
-            right={<Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />}
+            right={<Ionicons name="chevron-forward" size={18} color={tc.textSecondary} />}
             onPress={() => router.push('/categories')}
+            tc={tc}
           />
           <View style={styles.divider} />
           <SettingRow
             icon="mail-outline"
             label="Scan Email for Subscriptions"
-            right={<Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />}
+            right={<Ionicons name="chevron-forward" size={18} color={tc.textSecondary} />}
             onPress={() => router.push('/scan')}
+            tc={tc}
           />
           <View style={styles.divider} />
           <SettingRow
             icon="download-outline"
             label="Export CSV"
-            right={<Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />}
+            right={<Ionicons name="chevron-forward" size={18} color={tc.textSecondary} />}
+            tc={tc}
             onPress={async () => {
               const trials = await getTrials();
               if (trials.length === 0) { Alert.alert('No data', 'Add subscriptions first.'); return; }
@@ -290,19 +301,21 @@ export default function SettingsScreen() {
           />
         </Animated.View>
 
-        <Text style={styles.sectionHeader}>SUPPORT</Text>
-        <Animated.View entering={FadeInDown.duration(500).delay(300)} style={styles.sectionCard}>
+        <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>SUPPORT</Text>
+        <Animated.View entering={FadeInDown.duration(500).delay(300)} style={[styles.sectionCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
           <SettingRow
             icon="help-circle-outline"
             label="Help Center"
-            right={<Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />}
+            right={<Ionicons name="chevron-forward" size={18} color={tc.textSecondary} />}
             onPress={() => router.push('/help')}
+            tc={tc}
           />
           <View style={styles.divider} />
           <SettingRow
             icon="refresh-outline"
             label="Restore Purchases"
             onPress={handleRestore}
+            tc={tc}
           />
           <View style={styles.divider} />
           {!settings.isPremium && (
@@ -311,6 +324,7 @@ export default function SettingsScreen() {
                 icon="diamond-outline"
                 label="Upgrade to Premium"
                 onPress={() => router.push('/paywall')}
+                tc={tc}
               />
               <View style={styles.divider} />
             </>
@@ -319,10 +333,11 @@ export default function SettingsScreen() {
             icon="star-outline"
             label="Rate Unsub"
             onPress={() => Linking.openURL('https://apps.apple.com')}
+            tc={tc}
           />
         </Animated.View>
 
-        <Text style={styles.version}>Unsub v1.0.0</Text>
+        <Text style={[styles.version, { color: tc.textSecondary }]}>Unsub v1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );

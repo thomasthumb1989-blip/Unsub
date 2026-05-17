@@ -13,10 +13,11 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 import { ServiceLogo } from '../../src/components/ServiceLogo';
 import { getExchangeRates, convertCurrency, areRatesStale, refreshExchangeRates, ExchangeRates } from '../../src/utils/currency';
 
-function SpendRing({ total, segments, currency }: {
+function SpendRing({ total, segments, currency, tc }: {
   total: number;
   segments: { value: number; color: string }[];
   currency: string;
+  tc: any;
 }) {
   const width = 260;
   const height = 100;
@@ -33,8 +34,8 @@ function SpendRing({ total, segments, currency }: {
 
   return (
     <View style={{ alignItems: 'center', paddingVertical: 16 }}>
-      <Text style={styles.spendAmount}>{formatAmount(total)}</Text>
-      <View style={styles.spendBarBg}>
+      <Text style={{ fontSize: 36, fontWeight: '800', color: tc.white, textAlign: 'center' }}>{formatAmount(total)}</Text>
+      <View style={{ marginTop: 12, height: 8, borderRadius: 4, backgroundColor: tc.cardBorder, width: 220, overflow: 'hidden' }}>
         <View style={{ flexDirection: 'row', height: barHeight, borderRadius: barHeight / 2, overflow: 'hidden', width: barWidth }}>
           {segments.map((seg, i) => {
             const pct = total > 0 ? (seg.value / total) * 100 : 0;
@@ -103,27 +104,27 @@ export default function Dashboard() {
           <Text style={styles.brandLogo}>Unsub</Text>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <Pressable
-              style={styles.calendarBtn}
+              style={[styles.calendarBtn, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 Share.share({ message: trialsToShareText(trials, settings.currency) });
               }}
             >
-              <Ionicons name="share-outline" size={18} color={colors.textSecondary} />
+              <Ionicons name="share-outline" size={18} color={tc.textSecondary} />
             </Pressable>
             <Pressable
-              style={styles.calendarBtn}
+              style={[styles.calendarBtn, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
               onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/calendar'); }}
             >
-              <Ionicons name="calendar-outline" size={18} color={colors.textSecondary} />
+              <Ionicons name="calendar-outline" size={18} color={tc.textSecondary} />
             </Pressable>
           </View>
         </View>
 
         <Animated.View entering={FadeInDown.duration(500).delay(100)}>
           <LinearGradient
-            colors={['#1a1810', '#161618']}
-            style={styles.chartCard}
+            colors={[tc.card, tc.bg]}
+            style={[styles.chartCard, { borderColor: tc.cardBorder }]}
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
           >
@@ -142,22 +143,22 @@ export default function Dashboard() {
               </Pressable>
             </View>
 
-            <SpendRing total={displayTotal} segments={segments} currency={settings.currency} />
+            <SpendRing total={displayTotal} segments={segments} currency={settings.currency} tc={tc} />
 
-            <Text style={styles.donutLabel}>{viewMode === 'monthly' ? 'MONTHLY  ' : 'YEARLY  '}</Text>
+            <Text style={[styles.donutLabel, { color: tc.textSecondary }]}>{viewMode === 'monthly' ? 'MONTHLY  ' : 'YEARLY  '}</Text>
 
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>{'Active  '}</Text>
-                <Text style={styles.statValue}>{trials.length}</Text>
+                <Text style={[styles.statLabel, { color: tc.textSecondary }]}>{'Active  '}</Text>
+                <Text style={[styles.statValue, { color: tc.white }]}>{trials.length}</Text>
               </View>
-              <View style={[styles.statItem, styles.statBorder]}>
-                <Text style={styles.statLabel}>{'Highest  '}</Text>
-                <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>{sym}{highest >= 1000 ? `${(highest/1000).toFixed(1)}k` : highest.toFixed(2)}</Text>
+              <View style={[styles.statItem, styles.statBorder, { borderColor: tc.cardBorder }]}>
+                <Text style={[styles.statLabel, { color: tc.textSecondary }]}>{'Highest  '}</Text>
+                <Text style={[styles.statValue, { color: tc.white }]} numberOfLines={1} adjustsFontSizeToFit>{sym}{highest >= 1000 ? `${(highest/1000).toFixed(1)}k` : highest.toFixed(2)}</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>{'Lowest  '}</Text>
-                <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>{sym}{lowest >= 1000 ? `${(lowest/1000).toFixed(1)}k` : lowest.toFixed(2)}</Text>
+                <Text style={[styles.statLabel, { color: tc.textSecondary }]}>{'Lowest  '}</Text>
+                <Text style={[styles.statValue, { color: tc.white }]} numberOfLines={1} adjustsFontSizeToFit>{sym}{lowest >= 1000 ? `${(lowest/1000).toFixed(1)}k` : lowest.toFixed(2)}</Text>
               </View>
             </View>
           </LinearGradient>
@@ -165,22 +166,22 @@ export default function Dashboard() {
 
         <Animated.View entering={FadeInDown.duration(500).delay(200)} style={styles.summaryRow}>
           <Pressable style={{ flex: 1 }} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/(tabs)/subscriptions'); }}>
-            <LinearGradient colors={['#1a1614', '#141416']} style={styles.summaryCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-              <Ionicons name="layers-outline" size={18} color={colors.accent} />
-              <Text style={styles.summaryLabel}>{'YOUR SUBS  '}</Text>
+            <LinearGradient colors={[tc.card, tc.bg]} style={styles.summaryCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+              <Ionicons name="layers-outline" size={18} color={tc.accent} />
+              <Text style={[styles.summaryLabel, { color: tc.sectionHeader }]}>{'YOUR SUBS  '}</Text>
               <View style={styles.summaryBottom}>
-                <Text style={styles.summaryValue}>{trials.length}</Text>
-                <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+                <Text style={[styles.summaryValue, { color: tc.white }]}>{trials.length}</Text>
+                <Ionicons name="chevron-forward" size={16} color={tc.textSecondary} />
               </View>
             </LinearGradient>
           </Pressable>
           <Pressable style={{ flex: 1 }} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/(tabs)/history'); }}>
-            <LinearGradient colors={['#141618', '#141416']} style={styles.summaryCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-              <Ionicons name="time-outline" size={18} color={colors.accent} />
-              <Text style={styles.summaryLabel}>{'UPCOMING  '}</Text>
+            <LinearGradient colors={[tc.card, tc.bg]} style={styles.summaryCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+              <Ionicons name="time-outline" size={18} color={tc.accent} />
+              <Text style={[styles.summaryLabel, { color: tc.sectionHeader }]}>{'UPCOMING  '}</Text>
               <View style={styles.summaryBottom}>
-                <Text style={styles.summaryValue}>{upcoming.length}</Text>
-                <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+                <Text style={[styles.summaryValue, { color: tc.white }]}>{upcoming.length}</Text>
+                <Ionicons name="chevron-forward" size={16} color={tc.textSecondary} />
               </View>
             </LinearGradient>
           </Pressable>
@@ -188,8 +189,8 @@ export default function Dashboard() {
 
         {categoryMap.size > 0 && (
           <>
-            <Text style={styles.sectionHeader}>SPENDING BREAKDOWN</Text>
-            <Animated.View entering={FadeInDown.duration(500).delay(250)} style={styles.insightsContainer}>
+            <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>SPENDING BREAKDOWN</Text>
+            <Animated.View entering={FadeInDown.duration(500).delay(250)} style={[styles.insightsContainer, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
               {Array.from(categoryMap.entries())
                 .sort((a, b) => b[1] - a[1])
                 .map(([cat, amount]) => {
@@ -199,13 +200,13 @@ export default function Dashboard() {
                     <View key={cat} style={styles.insightRow}>
                       <View style={styles.insightLeft}>
                         <View style={[styles.insightDot, { backgroundColor: getCategoryColor(cat) }]} />
-                        <Text style={styles.insightCat} numberOfLines={1}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</Text>
+                        <Text style={[styles.insightCat, { color: tc.textSecondary }]} numberOfLines={1}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</Text>
                       </View>
                       <View style={styles.insightRight}>
                         <View style={styles.insightBarBg}>
                           <View style={[styles.insightBarFill, { width: `${Math.min(pct, 80)}%`, backgroundColor: getCategoryColor(cat) }]} />
                         </View>
-                        <Text style={styles.insightAmount} numberOfLines={1}>{sym}{displayAmount >= 1000 ? `${(displayAmount/1000).toFixed(1)}k` : displayAmount.toFixed(0)}</Text>
+                        <Text style={[styles.insightAmount, { color: tc.white }]} numberOfLines={1}>{sym}{displayAmount >= 1000 ? `${(displayAmount/1000).toFixed(1)}k` : displayAmount.toFixed(0)}</Text>
                       </View>
                     </View>
                   );
@@ -214,11 +215,11 @@ export default function Dashboard() {
           </>
         )}
 
-        <Text style={styles.sectionHeader}>UPCOMING BILLS</Text>
+        <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>UPCOMING BILLS</Text>
         {upcoming.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="calendar-outline" size={40} color={colors.textSecondary} />
-            <Text style={styles.emptyText}>No upcoming subscriptions</Text>
+            <Ionicons name="calendar-outline" size={40} color={tc.textSecondary} />
+            <Text style={[styles.emptyText, { color: tc.textSecondary }]}>No upcoming subscriptions</Text>
           </View>
         ) : (
           upcoming.map((trial, index) => {
@@ -230,17 +231,17 @@ export default function Dashboard() {
             return (
               <Animated.View key={trial.id} entering={FadeInDown.duration(400).delay(300 + index * 100)}>
                 <Pressable
-                  style={styles.billCard}
+                  style={[styles.billCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
                   onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push(`/trial/${trial.id}`); }}
                 >
                   <View style={styles.billLeft}>
                     <ServiceLogo name={trial.serviceName} color={catColor} />
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.billName}>{trial.serviceName + '  '}</Text>
+                      <Text style={[styles.billName, { color: tc.white }]}>{trial.serviceName + '  '}</Text>
                       <Text style={[styles.billDue, { color: urgencyColor }]}>{'• ' + dueStr + '  '}</Text>
                     </View>
                   </View>
-                  <Text style={styles.billAmount}>{sym}{getHomeAmount(trial).toFixed(2)}</Text>
+                  <Text style={[styles.billAmount, { color: tc.white }]}>{sym}{getHomeAmount(trial).toFixed(2)}</Text>
                 </Pressable>
               </Animated.View>
             );

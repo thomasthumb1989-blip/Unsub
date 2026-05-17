@@ -8,6 +8,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Trial, getTrials, getSettings } from '../src/utils/storage';
 import { colors, spacing, getCategoryColor, getCurrencySymbol } from '../src/utils/theme';
 import { ServiceLogo } from '../src/components/ServiceLogo';
+import { useTheme } from '../src/contexts/ThemeContext';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -22,6 +23,7 @@ function getFirstDayOfMonth(year: number, month: number): number {
 }
 
 export default function CalendarScreen() {
+  const { colors: tc } = useTheme();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
@@ -72,30 +74,30 @@ export default function CalendarScreen() {
   const isCurrentMonth = year === now.getFullYear() && month === now.getMonth();
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: tc.bg }]} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
-          <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={22} color={colors.white} />
+          <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }} style={[styles.backBtn, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
+            <Ionicons name="arrow-back" size={22} color={tc.white} />
           </Pressable>
-          <Text style={styles.headerTitle}>Calendar</Text>
+          <Text style={[styles.headerTitle, { color: tc.white }]}>Calendar</Text>
           <View style={{ width: 36 }} />
         </View>
 
         <View style={styles.monthNav}>
-          <Pressable onPress={prevMonth} style={styles.navBtn}>
-            <Ionicons name="chevron-back" size={20} color={colors.white} />
+          <Pressable onPress={prevMonth} style={[styles.navBtn, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
+            <Ionicons name="chevron-back" size={20} color={tc.white} />
           </Pressable>
-          <Text style={styles.monthLabel}>{MONTHS[month]} {year}</Text>
-          <Pressable onPress={nextMonth} style={styles.navBtn}>
-            <Ionicons name="chevron-forward" size={20} color={colors.white} />
+          <Text style={[styles.monthLabel, { color: tc.white }]}>{MONTHS[month]} {year}</Text>
+          <Pressable onPress={nextMonth} style={[styles.navBtn, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
+            <Ionicons name="chevron-forward" size={20} color={tc.white} />
           </Pressable>
         </View>
 
-        <View style={styles.calendarCard}>
+        <View style={[styles.calendarCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
           <View style={styles.dayHeaders}>
             {DAYS.map((d) => (
-              <Text key={d} style={styles.dayHeaderText}>{d}</Text>
+              <Text key={d} style={[styles.dayHeaderText, { color: tc.textSecondary }]}>{d}</Text>
             ))}
           </View>
 
@@ -117,7 +119,7 @@ export default function CalendarScreen() {
                     setSelectedDay(day === selectedDay ? null : day);
                   }}
                 >
-                  <Text style={[styles.dayText, isToday && styles.dayTextToday, isSelected && styles.dayTextSelected]}>
+                  <Text style={[styles.dayText, { color: tc.white }, isToday && styles.dayTextToday, isSelected && styles.dayTextSelected]}>
                     {day}
                   </Text>
                   {hasTrials && (
@@ -139,17 +141,17 @@ export default function CalendarScreen() {
             {selectedTrials.map((trial, index) => (
               <Animated.View key={trial.id} entering={FadeInDown.duration(300).delay(index * 80)}>
                 <Pressable
-                  style={styles.billCard}
+                  style={[styles.billCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
                   onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push(`/trial/${trial.id}`); }}
                 >
                   <View style={styles.billLeft}>
                     <ServiceLogo name={trial.serviceName} color={getCategoryColor(trial.category)} />
                     <View>
-                      <Text style={styles.billName}>{trial.serviceName}</Text>
-                      <Text style={styles.billCategory}>{trial.category || 'Other'}</Text>
+                      <Text style={[styles.billName, { color: tc.white }]}>{trial.serviceName}</Text>
+                      <Text style={[styles.billCategory, { color: tc.textSecondary }]}>{trial.category || 'Other'}</Text>
                     </View>
                   </View>
-                  <Text style={styles.billAmount}>{sym}{trial.chargeAmount.toFixed(2)}</Text>
+                  <Text style={[styles.billAmount, { color: tc.white }]}>{sym}{trial.chargeAmount.toFixed(2)}</Text>
                 </Pressable>
               </Animated.View>
             ))}
@@ -158,8 +160,8 @@ export default function CalendarScreen() {
 
         {!selectedDay && (
           <View style={styles.hint}>
-            <Ionicons name="information-circle-outline" size={18} color={colors.textSecondary} />
-            <Text style={styles.hintText}>Tap a day to see due subscriptions</Text>
+            <Ionicons name="information-circle-outline" size={18} color={tc.textSecondary} />
+            <Text style={[styles.hintText, { color: tc.textSecondary }]}>Tap a day to see due subscriptions</Text>
           </View>
         )}
       </ScrollView>

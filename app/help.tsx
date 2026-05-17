@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { colors, spacing } from '../src/utils/theme';
+import { useTheme } from '../src/contexts/ThemeContext';
 
 const FAQ = [
   {
@@ -37,50 +38,53 @@ const FAQ = [
 
 function AccordionItem({ q, a, icon, index }: { q: string; a: string; icon: keyof typeof Ionicons.glyphMap; index: number }) {
   const [open, setOpen] = useState(false);
+  const { colors: tc } = useTheme();
 
   return (
     <Animated.View entering={FadeInDown.duration(400).delay(100 + index * 80)}>
       <Pressable
-        style={styles.faqCard}
+        style={[styles.faqCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
         onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setOpen(!open); }}
       >
         <View style={styles.faqHeader}>
-          <Ionicons name={icon} size={20} color={colors.accent} style={{ marginRight: 12 }} />
-          <Text style={styles.faqQuestion}>{q}</Text>
-          <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={18} color={colors.accent} />
+          <Ionicons name={icon} size={20} color={tc.accent} style={{ marginRight: 12 }} />
+          <Text style={[styles.faqQuestion, { color: tc.white }]}>{q}</Text>
+          <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={18} color={tc.accent} />
         </View>
-        {open && <Text style={styles.faqAnswer}>{a}</Text>}
+        {open && <Text style={[styles.faqAnswer, { color: tc.textSecondary, borderTopColor: tc.cardBorder }]}>{a}</Text>}
       </Pressable>
     </Animated.View>
   );
 }
 
 export default function HelpScreen() {
+  const { colors: tc } = useTheme();
+
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: tc.bg }]} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
-            style={styles.backBtn}
+            style={[styles.backBtn, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
           >
-            <Ionicons name="arrow-back" size={22} color={colors.white} />
+            <Ionicons name="arrow-back" size={22} color={tc.white} />
           </Pressable>
-          <Text style={styles.headerTitle}>Help Center</Text>
+          <Text style={[styles.headerTitle, { color: tc.white }]}>Help Center</Text>
           <View style={{ width: 36 }} />
         </View>
 
-        <Text style={styles.sectionLabel}>FREQUENTLY ASKED QUESTIONS</Text>
+        <Text style={[styles.sectionLabel, { color: tc.sectionHeader }]}>FREQUENTLY ASKED QUESTIONS</Text>
 
         {FAQ.map((item, i) => (
           <AccordionItem key={i} q={item.q} a={item.a} icon={item.icon} index={i} />
         ))}
 
         <Animated.View entering={FadeInDown.duration(400).delay(600)}>
-          <View style={styles.contactCard}>
-            <Ionicons name="mail-outline" size={24} color={colors.accent} />
-            <Text style={styles.contactTitle}>Still need help?</Text>
-            <Text style={styles.contactBody}>
+          <View style={[styles.contactCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
+            <Ionicons name="mail-outline" size={24} color={tc.accent} />
+            <Text style={[styles.contactTitle, { color: tc.white }]}>Still need help?</Text>
+            <Text style={[styles.contactBody, { color: tc.textSecondary }]}>
               Contact us at support@unsub.app and we'll get back to you within 24 hours.
             </Text>
           </View>

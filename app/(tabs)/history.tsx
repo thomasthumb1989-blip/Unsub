@@ -44,19 +44,19 @@ export default function HistoryScreen() {
       <View style={styles.header}>
         <Text style={styles.brandLogo}>Unsub</Text>
       </View>
-      <Text style={styles.pageTitle}>History</Text>
+      <Text style={[styles.pageTitle, { color: tc.white }]}>History</Text>
 
       <Animated.View entering={FadeInDown.duration(500)}>
         <LinearGradient
-          colors={['#1a1a0a', '#161618']}
+          colors={[tc.card, tc.bg]}
           style={styles.summaryCard}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
           <Ionicons name="wallet-outline" size={24} color="#10B981" />
-          <Text style={styles.summaryLabel}>{'Total Saved  '}</Text>
+          <Text style={[styles.summaryLabel, { color: tc.textSecondary }]}>{'Total Saved  '}</Text>
           <Text style={styles.summaryAmount}>{sym}{totalSaved.toFixed(2)}{'  '}</Text>
-          <Text style={styles.summaryCount}>
+          <Text style={[styles.summaryCount, { color: tc.textSecondary }]}>
             {cancelled.length + ' subscription' + (cancelled.length !== 1 ? 's' : '') + ' cancelled  '}
           </Text>
         </LinearGradient>
@@ -70,12 +70,12 @@ export default function HistoryScreen() {
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
         renderItem={({ item, index }) => (
           <Animated.View entering={FadeInDown.duration(400).delay(100 + index * 80)}>
-            <View style={styles.card}>
+            <View style={[styles.card, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
               <View style={styles.cardLeft}>
                 <Ionicons name="checkmark-circle" size={20} color="#10B981" />
                 <View>
-                  <Text style={styles.serviceName}>{item.serviceName}</Text>
-                  <Text style={styles.dateText}>{formatDate(item.trialEndDate)}</Text>
+                  <Text style={[styles.serviceName, { color: tc.white }]}>{item.serviceName}</Text>
+                  <Text style={[styles.dateText, { color: tc.textSecondary }]}>{formatDate(item.trialEndDate)}</Text>
                 </View>
               </View>
               <Text style={styles.savedAmount}>{sym}{item.chargeAmount.toFixed(2)}</Text>
@@ -84,9 +84,9 @@ export default function HistoryScreen() {
         )}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Ionicons name="trophy-outline" size={40} color={colors.textSecondary} />
-            <Text style={styles.emptyText}>No cancelled subscriptions yet</Text>
-            <Text style={styles.emptySubtext}>Cancel unwanted subs to start saving</Text>
+            <Ionicons name="trophy-outline" size={40} color={tc.textSecondary} />
+            <Text style={[styles.emptyText, { color: tc.textSecondary }]}>No cancelled subscriptions yet</Text>
+            <Text style={[styles.emptySubtext, { color: tc.textSecondary }]}>Cancel unwanted subs to start saving</Text>
           </View>
         }
       />

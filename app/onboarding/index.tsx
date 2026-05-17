@@ -17,7 +17,7 @@ import { colors, spacing } from '../../src/utils/theme';
 import { saveSettings } from '../../src/utils/storage';
 
 const { width } = Dimensions.get('window');
-const FREE_TRIAL_LIMIT = 3;
+const FREE_TRIAL_LIMIT = 4;
 
 function MoneyCounter() {
   const [count, setCount] = useState(0);
@@ -223,15 +223,10 @@ function Screen5({ onSelect }: { onSelect: (names: string[]) => void }) {
 }
 
 function PaywallScreen() {
-  const plans = [
-    { id: 'weekly', label: 'Weekly', price: '£3.99/week', note: '3-day free trial', best: true },
-    { id: 'yearly', label: 'Annual', price: '£29.99/year', note: 'Save 85%' },
-  ];
-  const [selectedPlan, setSelectedPlan] = useState('weekly');
-
   const handlePurchase = async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    await saveSettings({ onboardingComplete: true });
+    // TODO: RevenueCat purchase — unsub_premium_lifetime £3.99/$3.99
+    await saveSettings({ onboardingComplete: true, isPremium: true });
     router.replace('/(tabs)');
   };
 
@@ -255,15 +250,16 @@ function PaywallScreen() {
 
       <Animated.View entering={FadeInDown.duration(500).delay(300)}>
         <Text style={styles.paywallTitle}>Unlock Unlimited Tracking</Text>
-        <Text style={styles.paywallSubtitle}>Join 10,000+ people saving money</Text>
+        <Text style={styles.paywallSubtitle}>One payment. Yours forever.</Text>
       </Animated.View>
 
       <Animated.View entering={FadeInDown.duration(500).delay(400)} style={styles.featureList}>
         {[
-          { icon: 'infinite-outline', text: 'Unlimited trial tracking' },
-          { icon: 'notifications-outline', text: 'Smart notifications' },
-          { icon: 'analytics-outline', text: 'Savings insights' },
-          { icon: 'share-outline', text: 'Share savings cards' },
+          { icon: 'infinite-outline', text: 'Unlimited subscription tracking' },
+          { icon: 'mail-outline', text: 'Email scanning for subscriptions' },
+          { icon: 'analytics-outline', text: 'Full spending analytics' },
+          { icon: 'calendar-outline', text: 'Calendar view & custom categories' },
+          { icon: 'download-outline', text: 'CSV export & multi-currency' },
         ].map((f, i) => (
           <View key={i} style={styles.featureRow}>
             <Ionicons name={f.icon as keyof typeof Ionicons.glyphMap} size={18} color={colors.success} />
@@ -272,31 +268,17 @@ function PaywallScreen() {
         ))}
       </Animated.View>
 
-      {plans.map((plan) => (
-        <Pressable
-          key={plan.id}
-          style={[
-            styles.planCard,
-            selectedPlan === plan.id && styles.planCardSelected,
-          ]}
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            setSelectedPlan(plan.id);
-          }}
-        >
-          {plan.best && <View style={styles.bestBadge}><Text style={styles.bestBadgeText}>POPULAR</Text></View>}
-          <View style={styles.planLeft}>
-            <View style={[styles.radio, selectedPlan === plan.id && styles.radioSelected]}>
-              {selectedPlan === plan.id && <View style={styles.radioInner} />}
-            </View>
-            <View>
-              <Text style={styles.planLabel}>{plan.label}</Text>
-              <Text style={styles.planNote}>{plan.note}</Text>
-            </View>
+      <View style={[styles.planCard, styles.planCardSelected]}>
+        <View style={styles.bestBadge}><Text style={styles.bestBadgeText}>ONE-TIME</Text></View>
+        <View style={styles.planLeft}>
+          <Ionicons name="diamond" size={22} color={colors.accent} />
+          <View>
+            <Text style={styles.planLabel}>Premium Lifetime</Text>
+            <Text style={styles.planNote}>Pay once, own forever</Text>
           </View>
-          <Text style={styles.planPrice}>{plan.price}</Text>
-        </Pressable>
-      ))}
+        </View>
+        <Text style={styles.planPrice}>£3.99</Text>
+      </View>
 
       <Pressable style={styles.purchaseButton} onPress={handlePurchase}>
         <LinearGradient
@@ -305,16 +287,16 @@ function PaywallScreen() {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
         >
-          <Text style={styles.purchaseButtonText}>Continue</Text>
+          <Text style={styles.purchaseButtonText}>Unlock Premium — £3.99</Text>
         </LinearGradient>
       </Pressable>
 
       <Pressable onPress={handleFree}>
-        <Text style={styles.freeText}>Start free with {FREE_TRIAL_LIMIT} trials</Text>
+        <Text style={styles.freeText}>Start free with {FREE_TRIAL_LIMIT} subscriptions</Text>
       </Pressable>
 
       <Text style={styles.legalText}>
-        Recurring billing. Cancel anytime. Restore purchases in Settings.
+        One-time purchase. No subscription. No hidden fees.
       </Text>
     </View>
   );

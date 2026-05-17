@@ -165,7 +165,7 @@ export default function ScanScreen() {
     switch (c) {
       case 'high': return { name: 'checkmark-circle' as const, color: '#10B981' };
       case 'medium': return { name: 'alert-circle' as const, color: '#F59E0B' };
-      default: return { name: 'help-circle' as const, color: colors.textSecondary };
+      default: return { name: 'help-circle' as const, color: tc.textSecondary };
     }
   };
 
@@ -175,11 +175,11 @@ export default function ScanScreen() {
         <View style={styles.header}>
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
-            style={styles.backBtn}
+            style={[styles.backBtn, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
           >
-            <Ionicons name="arrow-back" size={22} color={colors.white} />
+            <Ionicons name="arrow-back" size={22} color={tc.white} />
           </Pressable>
-          <Text style={styles.title}>Email Scan</Text>
+          <Text style={[styles.title, { color: tc.white }]}>Email Scan</Text>
           <View style={{ width: 36 }} />
         </View>
 
@@ -192,8 +192,8 @@ export default function ScanScreen() {
               >
                 <Ionicons name="mail-outline" size={48} color="#3B82F6" />
               </LinearGradient>
-              <Text style={styles.heroTitle}>Find Hidden Subscriptions</Text>
-              <Text style={styles.heroDesc}>
+              <Text style={[styles.heroTitle, { color: tc.white }]}>Find Hidden Subscriptions</Text>
+              <Text style={[styles.heroDesc, { color: tc.textSecondary }]}>
                 We'll scan your email for subscription receipts and billing notifications.
                 Only email subjects and senders are read — never email content.
               </Text>
@@ -203,7 +203,7 @@ export default function ScanScreen() {
               <Ionicons name="shield-checkmark-outline" size={20} color="#10B981" />
               <View style={styles.privacyText}>
                 <Text style={styles.privacyTitle}>Privacy First</Text>
-                <Text style={styles.privacyDesc}>
+                <Text style={[styles.privacyDesc, { color: tc.textSecondary }]}>
                   Read-only access. We only check subject lines and sender names. No email bodies are read. You can disconnect anytime.
                 </Text>
               </View>
@@ -221,7 +221,7 @@ export default function ScanScreen() {
               </LinearGradient>
             </Pressable>
 
-            <Text style={styles.disclaimer}>
+            <Text style={[styles.disclaimer, { color: tc.textSecondary }]}>
               Uses Google's secure OAuth. We never see your password.
             </Text>
           </Animated.View>
@@ -230,29 +230,29 @@ export default function ScanScreen() {
         {(state === 'authenticating' || state === 'scanning') && (
           <View style={styles.loadingSection}>
             <ActivityIndicator size="large" color={colors.accent} />
-            <Text style={styles.loadingText}>
+            <Text style={[styles.loadingText, { color: tc.white }]}>
               {state === 'authenticating' ? 'Connecting to Gmail...' : 'Scanning emails for subscriptions...'}
             </Text>
-            <Text style={styles.loadingSubtext}>This may take a moment</Text>
+            <Text style={[styles.loadingSubtext, { color: tc.textSecondary }]}>This may take a moment</Text>
           </View>
         )}
 
         {state === 'results' && (
           <Animated.View entering={FadeInDown.duration(400)}>
             <View style={styles.resultsHeader}>
-              <Text style={styles.resultsTitle}>
+              <Text style={[styles.resultsTitle, { color: tc.white }]}>
                 Found {results.length} subscription{results.length !== 1 ? 's' : ''}
               </Text>
-              <Text style={styles.resultsSubtitle}>
+              <Text style={[styles.resultsSubtitle, { color: tc.textSecondary }]}>
                 {selected.size} selected to add
               </Text>
             </View>
 
             {results.length === 0 ? (
               <View style={styles.emptyState}>
-                <Ionicons name="search-outline" size={48} color={colors.textSecondary} />
-                <Text style={styles.emptyText}>No subscriptions found in your emails</Text>
-                <Text style={styles.emptySubtext}>Try adding subscriptions manually</Text>
+                <Ionicons name="search-outline" size={48} color={tc.textSecondary} />
+                <Text style={[styles.emptyText, { color: tc.white }]}>No subscriptions found in your emails</Text>
+                <Text style={[styles.emptySubtext, { color: tc.textSecondary }]}>Try adding subscriptions manually</Text>
               </View>
             ) : (
               <>
@@ -262,7 +262,7 @@ export default function ScanScreen() {
                   return (
                     <Animated.View key={sub.name} entering={FadeInDown.duration(300).delay(index * 60)}>
                       <Pressable
-                        style={[styles.resultCard, isSelected && styles.resultCardSelected]}
+                        style={[styles.resultCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }, isSelected && styles.resultCardSelected]}
                         onPress={() => toggleSelect(sub.name)}
                       >
                         <View style={styles.resultLeft}>
@@ -272,7 +272,7 @@ export default function ScanScreen() {
                           <ServiceLogo name={sub.name} color="#3B82F6" size={36} />
                           <View style={styles.resultInfo}>
                             <View style={styles.resultNameRow}>
-                              <Text style={styles.resultName}>{sub.name}</Text>
+                              <Text style={[styles.resultName, { color: tc.white }]}>{sub.name}</Text>
                               <Ionicons name={ci.name} size={14} color={ci.color} />
                             </View>
                             <Text style={styles.resultMeta} numberOfLines={1}>
@@ -316,8 +316,8 @@ export default function ScanScreen() {
             )}
 
             <Pressable style={styles.disconnectBtn} onPress={handleDisconnect}>
-              <Ionicons name="log-out-outline" size={16} color={colors.textSecondary} />
-              <Text style={styles.disconnectText}>Disconnect Gmail</Text>
+              <Ionicons name="log-out-outline" size={16} color={tc.textSecondary} />
+              <Text style={[styles.disconnectText, { color: tc.textSecondary }]}>Disconnect Gmail</Text>
             </Pressable>
           </Animated.View>
         )}
@@ -325,9 +325,9 @@ export default function ScanScreen() {
         {state === 'error' && (
           <View style={styles.errorSection}>
             <Ionicons name="warning-outline" size={48} color="#EF4444" />
-            <Text style={styles.errorText}>{error}</Text>
-            <Pressable style={styles.retryBtn} onPress={() => setState('idle')}>
-              <Text style={styles.retryText}>Try Again</Text>
+            <Text style={[styles.errorText, { color: tc.textSecondary }]}>{error}</Text>
+            <Pressable style={[styles.retryBtn, { backgroundColor: tc.card, borderColor: tc.cardBorder }]} onPress={() => setState('idle')}>
+              <Text style={[styles.retryText, { color: tc.white }]}>Try Again</Text>
             </Pressable>
           </View>
         )}

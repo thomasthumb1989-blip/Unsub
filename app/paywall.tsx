@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,40 +8,27 @@ import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown, ZoomIn } from 'react-native-reanimated';
 import { saveSettings } from '../src/utils/storage';
 import { colors, spacing } from '../src/utils/theme';
-
-const plans = [
-  {
-    id: 'weekly',
-    label: 'Weekly',
-    price: '£3.99/week',
-    note: '3-day free trial',
-    popular: true,
-  },
-  {
-    id: 'yearly',
-    label: 'Annual',
-    price: '£29.99/year',
-    note: 'Save 85%',
-    popular: false,
-  },
-];
+import { useTheme } from '../src/contexts/ThemeContext';
 
 const features = [
   { icon: 'infinite-outline' as const, text: 'Unlimited subscription tracking' },
-  { icon: 'notifications-outline' as const, text: 'Smart cancel reminders' },
-  { icon: 'analytics-outline' as const, text: 'Savings history & insights' },
-  { icon: 'shield-checkmark-outline' as const, text: 'Priority support' },
-  { icon: 'share-outline' as const, text: 'Export & share savings' },
+  { icon: 'mail-outline' as const, text: 'Email scanning for subscriptions' },
+  { icon: 'analytics-outline' as const, text: 'Full spending analytics' },
+  { icon: 'calendar-outline' as const, text: 'Calendar view & custom categories' },
+  { icon: 'download-outline' as const, text: 'CSV export & multi-currency' },
 ];
 
 export default function PaywallScreen() {
-  const [selectedPlan, setSelectedPlan] = useState('weekly');
+  const { colors: tc } = useTheme();
 
   const handlePurchase = async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    // TODO: RevenueCat purchase flow
+    // Product ID: unsub_premium_lifetime
+    // UK: £3.99, US: $3.99
     Alert.alert(
       'Purchase',
-      'In-app purchase coming soon. RevenueCat API keys needed.',
+      'In-app purchase coming soon. RevenueCat integration needed.',
       [{ text: 'OK' }]
     );
   };
@@ -52,13 +39,13 @@ export default function PaywallScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: tc.bg }]} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <Pressable
           onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
-          style={styles.closeBtn}
+          style={[styles.closeBtn, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
         >
-          <Ionicons name="close" size={20} color={colors.textSecondary} />
+          <Ionicons name="close" size={20} color={tc.textSecondary} />
         </Pressable>
       </View>
 
@@ -75,8 +62,8 @@ export default function PaywallScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(500).delay(200)}>
-          <Text style={styles.title}>Upgrade to Premium</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: tc.white }]}>Upgrade to Premium</Text>
+          <Text style={[styles.subtitle, { color: tc.textSecondary }]}>
             Track unlimited subscriptions and never miss a cancellation deadline
           </Text>
         </Animated.View>
@@ -87,41 +74,25 @@ export default function PaywallScreen() {
               <View style={styles.featureIconWrap}>
                 <Ionicons name={f.icon} size={18} color={colors.success} />
               </View>
-              <Text style={styles.featureText}>{f.text}</Text>
+              <Text style={[styles.featureText, { color: tc.white }]}>{f.text}</Text>
             </View>
           ))}
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(500).delay(400)} style={{ width: '100%' }}>
-          {plans.map((plan) => (
-            <Pressable
-              key={plan.id}
-              style={[
-                styles.planCard,
-                selectedPlan === plan.id && styles.planCardSelected,
-              ]}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setSelectedPlan(plan.id);
-              }}
-            >
-              {plan.popular && (
-                <View style={styles.popularBadge}>
-                  <Text style={styles.popularText}>POPULAR</Text>
-                </View>
-              )}
-              <View style={styles.planLeft}>
-                <View style={[styles.radio, selectedPlan === plan.id && styles.radioSelected]}>
-                  {selectedPlan === plan.id && <View style={styles.radioInner} />}
-                </View>
-                <View>
-                  <Text style={styles.planLabel}>{plan.label}</Text>
-                  <Text style={styles.planNote}>{plan.note}</Text>
-                </View>
+          <View style={[styles.planCard, styles.planCardSelected, { backgroundColor: tc.card, borderColor: colors.accent }]}>
+            <View style={styles.popularBadge}>
+              <Text style={styles.popularText}>ONE-TIME</Text>
+            </View>
+            <View style={styles.planLeft}>
+              <Ionicons name="diamond" size={22} color={colors.accent} />
+              <View>
+                <Text style={[styles.planLabel, { color: tc.white }]}>Premium Lifetime</Text>
+                <Text style={[styles.planNote, { color: tc.textSecondary }]}>Pay once, own forever</Text>
               </View>
-              <Text style={styles.planPrice}>{plan.price}</Text>
-            </Pressable>
-          ))}
+            </View>
+            <Text style={styles.planPrice}>£3.99</Text>
+          </View>
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(500).delay(500)} style={{ width: '100%' }}>
@@ -132,19 +103,17 @@ export default function PaywallScreen() {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
             >
-              <Text style={styles.purchaseButtonText}>
-                {selectedPlan === 'weekly' ? 'Start Free Trial' : 'Subscribe Now'}
-              </Text>
+              <Text style={styles.purchaseButtonText}>Unlock Premium — £3.99</Text>
             </LinearGradient>
           </Pressable>
 
           <Pressable onPress={handleRestore} style={styles.restoreBtn}>
-            <Text style={styles.restoreText}>Restore Purchases</Text>
+            <Text style={[styles.restoreText, { color: tc.textSecondary }]}>Restore Purchases</Text>
           </Pressable>
 
-          <Text style={styles.legalText}>
-            Recurring billing. Cancel anytime in your App Store settings.{'\n'}
-            Payment charged at end of trial period.
+          <Text style={[styles.legalText, { color: tc.textSecondary }]}>
+            One-time purchase. No subscription. No hidden fees.{'\n'}
+            Restore purchases anytime in Settings.
           </Text>
         </Animated.View>
       </ScrollView>

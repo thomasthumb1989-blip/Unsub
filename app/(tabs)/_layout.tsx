@@ -41,7 +41,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           <Ionicons name="add" size={28} color="#fff" />
         </TouchableOpacity>
       </View>
-      <BlurView intensity={40} tint={tc.bg === '#0A0A0A' ? 'dark' : 'light'} style={[styles.tabBar, { paddingBottom: bottomPad, backgroundColor: tc.bg === '#0A0A0A' ? 'rgba(17,17,17,0.85)' : 'rgba(255,255,255,0.85)' }]}>
+      <BlurView intensity={40} tint={tc.bg === '#0A0A0A' ? 'dark' : 'light'} style={[styles.tabBar, { paddingBottom: bottomPad, backgroundColor: tc.bg === '#0A0A0A' ? 'rgba(17,17,17,0.85)' : 'rgba(255,255,255,0.85)', borderTopColor: tc.cardBorder }]}>
         {state.routes.map((route: any, index: number) => {
           const isFocused = state.index === index;
           const iconName = isFocused
@@ -60,12 +60,12 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             <Pressable
               key={route.key}
               onPress={onPress}
-              style={[styles.tabItem, isFocused && styles.tabItemActive]}
+              style={[styles.tabItem, isFocused && [styles.tabItemActive, { backgroundColor: tc.tabActive }]]}
             >
               <Ionicons
                 name={iconName}
                 size={22}
-                color={isFocused ? colors.white : colors.textSecondary}
+                color={isFocused ? tc.white : tc.textSecondary}
               />
             </Pressable>
           );
