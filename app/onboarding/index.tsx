@@ -6,13 +6,15 @@ import {
   Pressable,
   Dimensions,
   FlatList,
-  Animated,
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import Animated, { FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated';
 import { colors, spacing } from '../../src/utils/theme';
 import { saveSettings } from '../../src/utils/storage';
-import { services } from '../../src/data/services';
 
 const { width } = Dimensions.get('window');
 const FREE_TRIAL_LIMIT = 3;
@@ -34,21 +36,39 @@ function MoneyCounter() {
     return () => clearInterval(interval);
   }, []);
 
+  return <Text style={styles.moneyCounter}>£{count}</Text>;
+}
+
+function IconCircle({ name, color, size = 80 }: { name: keyof typeof Ionicons.glyphMap; color: string; size?: number }) {
   return (
-    <Text style={styles.moneyCounter}>£{count}</Text>
+    <Animated.View entering={ZoomIn.duration(500).delay(200)}>
+      <LinearGradient
+        colors={[`${color}30`, `${color}10`]}
+        style={[styles.iconCircle, { width: size, height: size, borderRadius: size / 2 }]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <Ionicons name={name} size={size * 0.45} color={color} />
+      </LinearGradient>
+    </Animated.View>
   );
 }
 
 function Screen1() {
   return (
     <View style={styles.slide}>
-      <Text style={styles.emoji}>💸</Text>
-      <MoneyCounter />
-      <Text style={styles.title}>You've probably wasted hundreds on forgotten free trials</Text>
-      <Text style={styles.subtitle}>
-        That Netflix trial you forgot. The gym app. That meditation app.
-        They all add up.
-      </Text>
+      <IconCircle name="wallet-outline" color="#EF4444" size={100} />
+      <Animated.View entering={FadeInDown.duration(500).delay(300)}>
+        <MoneyCounter />
+      </Animated.View>
+      <Animated.View entering={FadeInDown.duration(500).delay(400)}>
+        <Text style={styles.title}>You've probably wasted hundreds on forgotten free trials</Text>
+      </Animated.View>
+      <Animated.View entering={FadeInDown.duration(500).delay(500)}>
+        <Text style={styles.subtitle}>
+          That Netflix trial you forgot. The gym app. That meditation app.{'\n'}They all add up.
+        </Text>
+      </Animated.View>
     </View>
   );
 }
@@ -56,13 +76,19 @@ function Screen1() {
 function Screen2() {
   return (
     <View style={styles.slide}>
-      <Text style={styles.emoji}>📊</Text>
-      <Text style={styles.bigStat}>£170</Text>
-      <Text style={styles.statLabel}>lost per year</Text>
-      <Text style={styles.title}>The average person loses £170/year to subscription traps</Text>
-      <Text style={styles.subtitle}>
-        Free trials are designed to be forgotten. Companies count on it.
-      </Text>
+      <IconCircle name="trending-up-outline" color="#F59E0B" size={100} />
+      <Animated.View entering={FadeInDown.duration(500).delay(300)}>
+        <Text style={styles.bigStat}>£170</Text>
+        <Text style={styles.statLabel}>lost per year</Text>
+      </Animated.View>
+      <Animated.View entering={FadeInDown.duration(500).delay(400)}>
+        <Text style={styles.title}>The average person loses £170/year to subscription traps</Text>
+      </Animated.View>
+      <Animated.View entering={FadeInDown.duration(500).delay(500)}>
+        <Text style={styles.subtitle}>
+          Free trials are designed to be forgotten. Companies count on it.
+        </Text>
+      </Animated.View>
     </View>
   );
 }
@@ -73,29 +99,35 @@ function Screen3({ onSelect }: { onSelect: (v: string) => void }) {
 
   return (
     <View style={styles.slide}>
-      <Text style={styles.emoji}>🤔</Text>
-      <Text style={styles.title}>How many free trials have you forgotten to cancel?</Text>
-      <View style={styles.optionRow}>
+      <IconCircle name="help-circle-outline" color="#8B5CF6" size={100} />
+      <Animated.View entering={FadeInDown.duration(500).delay(300)}>
+        <Text style={styles.title}>How many free trials have you forgotten to cancel?</Text>
+      </Animated.View>
+      <Animated.View entering={FadeInDown.duration(500).delay(400)} style={styles.optionRow}>
         {options.map((opt) => (
           <Pressable
             key={opt}
             style={[styles.optionButton, selected === opt && styles.optionSelected]}
-            onPress={() => { setSelected(opt); onSelect(opt); }}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setSelected(opt);
+              onSelect(opt);
+            }}
           >
             <Text style={[styles.optionText, selected === opt && styles.optionTextSelected]}>
               {opt}
             </Text>
           </Pressable>
         ))}
-      </View>
-      {selected === '6+' && (
-        <Text style={styles.highlight}>That could be over £500 wasted!</Text>
-      )}
-      {selected === '3-5' && (
-        <Text style={styles.highlight}>That's roughly £200-400 gone!</Text>
-      )}
-      {selected === '1-2' && (
-        <Text style={styles.highlight}>Even 1-2 can cost you £100+</Text>
+      </Animated.View>
+      {selected !== '' && (
+        <Animated.View entering={FadeInUp.duration(400)}>
+          <Text style={styles.highlight}>
+            {selected === '6+' ? "That could be over £500 wasted!" :
+             selected === '3-5' ? "That's roughly £200-400 gone!" :
+             "Even 1-2 can cost you £100+"}
+          </Text>
+        </Animated.View>
       )}
     </View>
   );
@@ -103,22 +135,31 @@ function Screen3({ onSelect }: { onSelect: (v: string) => void }) {
 
 function Screen4() {
   const steps = [
-    { icon: '➕', title: 'Log your trial', desc: 'Add it in seconds' },
-    { icon: '🔔', title: 'Get reminded', desc: '3 days, 1 day, 2 hours before' },
-    { icon: '✅', title: 'Cancel on time', desc: 'One tap to cancel. Money saved.' },
+    { icon: 'add-circle-outline' as const, title: 'Log your trial', desc: 'Add it in seconds' },
+    { icon: 'notifications-outline' as const, title: 'Get reminded', desc: '3 days, 1 day, 2 hours before' },
+    { icon: 'checkmark-circle-outline' as const, title: 'Cancel on time', desc: 'One tap to cancel. Money saved.' },
   ];
 
   return (
     <View style={styles.slide}>
-      <Text style={styles.title}>Unsub watches your trials so you don't have to</Text>
+      <Animated.View entering={FadeInDown.duration(500).delay(200)}>
+        <Text style={styles.title}>Unsub watches your trials so you don't have to</Text>
+      </Animated.View>
       {steps.map((step, i) => (
-        <View key={i} style={styles.stepRow}>
-          <Text style={styles.stepIcon}>{step.icon}</Text>
+        <Animated.View key={i} entering={FadeInDown.duration(400).delay(300 + i * 150)} style={styles.stepRow}>
+          <LinearGradient
+            colors={['rgba(245,158,11,0.15)', 'rgba(245,158,11,0.05)']}
+            style={styles.stepIconWrap}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Ionicons name={step.icon} size={24} color={colors.accent} />
+          </LinearGradient>
           <View style={styles.stepContent}>
             <Text style={styles.stepTitle}>{step.title}</Text>
             <Text style={styles.stepDesc}>{step.desc}</Text>
           </View>
-        </View>
+        </Animated.View>
       ))}
     </View>
   );
@@ -126,9 +167,26 @@ function Screen4() {
 
 function Screen5({ onSelect }: { onSelect: (names: string[]) => void }) {
   const [selected, setSelected] = useState<string[]>([]);
-  const topServices = services.slice(0, 30);
+  const popular = [
+    { name: 'Netflix', icon: 'tv-outline' },
+    { name: 'Spotify', icon: 'musical-notes-outline' },
+    { name: 'Amazon Prime', icon: 'bag-outline' },
+    { name: 'Disney+', icon: 'film-outline' },
+    { name: 'YouTube Premium', icon: 'play-outline' },
+    { name: 'Apple Music', icon: 'headset-outline' },
+    { name: 'Xbox Game Pass', icon: 'game-controller-outline' },
+    { name: 'Adobe CC', icon: 'color-palette-outline' },
+    { name: 'ChatGPT Plus', icon: 'chatbubble-outline' },
+    { name: 'Gym', icon: 'fitness-outline' },
+    { name: 'NordVPN', icon: 'shield-outline' },
+    { name: 'iCloud', icon: 'cloud-outline' },
+    { name: 'Notion', icon: 'document-outline' },
+    { name: 'Audible', icon: 'book-outline' },
+    { name: 'Duolingo', icon: 'language-outline' },
+  ];
 
   const toggle = (name: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const next = selected.includes(name)
       ? selected.filter((s) => s !== name)
       : [...selected, name];
@@ -138,34 +196,41 @@ function Screen5({ onSelect }: { onSelect: (names: string[]) => void }) {
 
   return (
     <View style={styles.slide}>
-      <Text style={styles.title}>Which services do you use?</Text>
-      <Text style={styles.subtitle}>We'll help you track trials for these</Text>
-      <View style={styles.serviceGrid}>
-        {topServices.map((s) => (
+      <Animated.View entering={FadeInDown.duration(500).delay(200)}>
+        <Text style={styles.title}>Which services do you use?</Text>
+        <Text style={styles.subtitle}>We'll help you track these</Text>
+      </Animated.View>
+      <Animated.View entering={FadeInDown.duration(500).delay(300)} style={styles.serviceGrid}>
+        {popular.map((s) => (
           <Pressable
             key={s.name}
             style={[styles.serviceChip, selected.includes(s.name) && styles.serviceChipSelected]}
             onPress={() => toggle(s.name)}
           >
-            <Text style={styles.serviceIcon}>{s.icon}</Text>
+            <Ionicons
+              name={s.icon as keyof typeof Ionicons.glyphMap}
+              size={16}
+              color={selected.includes(s.name) ? colors.accent : colors.textSecondary}
+            />
             <Text style={[styles.serviceName, selected.includes(s.name) && styles.serviceNameSelected]} numberOfLines={1}>
               {s.name}
             </Text>
           </Pressable>
         ))}
-      </View>
+      </Animated.View>
     </View>
   );
 }
 
 function PaywallScreen() {
   const plans = [
-    { id: 'weekly', label: 'Weekly', price: '£3.99 weekly', note: '3-day free trial', best: true },
-    { id: 'yearly', label: 'Annual', price: '£29.99 yearly', note: 'Save 85%' },
+    { id: 'weekly', label: 'Weekly', price: '£3.99/week', note: '3-day free trial', best: true },
+    { id: 'yearly', label: 'Annual', price: '£29.99/year', note: 'Save 85%' },
   ];
   const [selectedPlan, setSelectedPlan] = useState('weekly');
 
   const handlePurchase = async () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     await saveSettings({ onboardingComplete: true });
     router.replace('/(tabs)');
   };
@@ -177,17 +242,35 @@ function PaywallScreen() {
 
   return (
     <View style={styles.slide}>
-      <Text style={styles.paywallTitle}>Unlock Unlimited Tracking</Text>
-      <Text style={styles.paywallSubtitle}>Join 10,000+ people saving money</Text>
+      <Animated.View entering={ZoomIn.duration(400).delay(200)}>
+        <LinearGradient
+          colors={['rgba(245,158,11,0.2)', 'rgba(245,158,11,0.05)']}
+          style={styles.crownCircle}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <Ionicons name="diamond" size={36} color={colors.accent} />
+        </LinearGradient>
+      </Animated.View>
 
-      <View style={styles.featureList}>
-        {['Unlimited trial tracking', 'Smart notifications', 'Savings history', 'Share savings cards'].map((f, i) => (
+      <Animated.View entering={FadeInDown.duration(500).delay(300)}>
+        <Text style={styles.paywallTitle}>Unlock Unlimited Tracking</Text>
+        <Text style={styles.paywallSubtitle}>Join 10,000+ people saving money</Text>
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.duration(500).delay(400)} style={styles.featureList}>
+        {[
+          { icon: 'infinite-outline', text: 'Unlimited trial tracking' },
+          { icon: 'notifications-outline', text: 'Smart notifications' },
+          { icon: 'analytics-outline', text: 'Savings insights' },
+          { icon: 'share-outline', text: 'Share savings cards' },
+        ].map((f, i) => (
           <View key={i} style={styles.featureRow}>
-            <Text style={styles.featureCheck}>✅</Text>
-            <Text style={styles.featureText}>{f}</Text>
+            <Ionicons name={f.icon as keyof typeof Ionicons.glyphMap} size={18} color={colors.success} />
+            <Text style={styles.featureText}>{f.text}</Text>
           </View>
         ))}
-      </View>
+      </Animated.View>
 
       {plans.map((plan) => (
         <Pressable
@@ -195,12 +278,17 @@ function PaywallScreen() {
           style={[
             styles.planCard,
             selectedPlan === plan.id && styles.planCardSelected,
-            plan.best && styles.planCardBest,
           ]}
-          onPress={() => setSelectedPlan(plan.id)}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setSelectedPlan(plan.id);
+          }}
         >
+          {plan.best && <View style={styles.bestBadge}><Text style={styles.bestBadgeText}>POPULAR</Text></View>}
           <View style={styles.planLeft}>
-            <View style={[styles.radio, selectedPlan === plan.id && styles.radioSelected]} />
+            <View style={[styles.radio, selectedPlan === plan.id && styles.radioSelected]}>
+              {selectedPlan === plan.id && <View style={styles.radioInner} />}
+            </View>
             <View>
               <Text style={styles.planLabel}>{plan.label}</Text>
               <Text style={styles.planNote}>{plan.note}</Text>
@@ -211,7 +299,14 @@ function PaywallScreen() {
       ))}
 
       <Pressable style={styles.purchaseButton} onPress={handlePurchase}>
-        <Text style={styles.purchaseButtonText}>Continue</Text>
+        <LinearGradient
+          colors={['#F59E0B', '#D97706']}
+          style={styles.purchaseGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+        >
+          <Text style={styles.purchaseButtonText}>Continue</Text>
+        </LinearGradient>
       </Pressable>
 
       <Pressable onPress={handleFree}>
@@ -219,7 +314,7 @@ function PaywallScreen() {
       </Pressable>
 
       <Text style={styles.legalText}>
-        Recurring billing. Cancel anytime. Restore purchases available in Settings.
+        Recurring billing. Cancel anytime. Restore purchases in Settings.
       </Text>
     </View>
   );
@@ -228,7 +323,6 @@ function PaywallScreen() {
 export default function Onboarding() {
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const scrollX = useRef(new Animated.Value(0)).current;
 
   const screens = [
     { key: '1', component: <Screen1 /> },
@@ -240,6 +334,7 @@ export default function Onboarding() {
   ];
 
   const goNext = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (currentIndex < screens.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
     }
@@ -254,10 +349,6 @@ export default function Onboarding() {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         bounces={false}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: false }
-        )}
         onMomentumScrollEnd={(e) => {
           setCurrentIndex(Math.round(e.nativeEvent.contentOffset.x / width));
         }}
@@ -278,7 +369,15 @@ export default function Onboarding() {
             ))}
           </View>
           <Pressable style={styles.nextButton} onPress={goNext}>
-            <Text style={styles.nextButtonText}>Continue</Text>
+            <LinearGradient
+              colors={['#F59E0B', '#D97706']}
+              style={styles.nextGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <Text style={styles.nextButtonText}>Continue</Text>
+              <Ionicons name="arrow-forward" size={18} color="#fff" />
+            </LinearGradient>
           </Pressable>
         </View>
       )}
@@ -291,23 +390,29 @@ const styles = StyleSheet.create({
   slide: {
     flex: 1,
     paddingHorizontal: spacing.lg,
-    paddingTop: 60,
+    paddingTop: 50,
     alignItems: 'center',
   },
-  emoji: { fontSize: 64, marginBottom: spacing.md },
+  iconCircle: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
   moneyCounter: {
     fontSize: 72,
     fontWeight: '800',
-    color: colors.red,
+    color: '#EF4444',
     marginBottom: spacing.md,
   },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '700',
-    color: colors.text,
+    color: colors.white,
     textAlign: 'center',
     marginBottom: spacing.md,
-    lineHeight: 24,
+    lineHeight: 32,
   },
   subtitle: {
     fontSize: 16,
@@ -316,14 +421,15 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   bigStat: {
-    fontSize: 80,
+    fontSize: 72,
     fontWeight: '800',
-    color: colors.amber,
-    marginBottom: 0,
+    color: colors.accent,
+    textAlign: 'center',
   },
   statLabel: {
-    fontSize: 20,
-    color: colors.amber,
+    fontSize: 18,
+    color: colors.accentLight,
+    textAlign: 'center',
     marginBottom: spacing.lg,
   },
   optionRow: {
@@ -332,49 +438,56 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   optionButton: {
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
     borderRadius: 16,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: colors.cardBorder,
     backgroundColor: colors.card,
   },
   optionSelected: {
     borderColor: colors.accent,
-    backgroundColor: colors.accentDark + '30',
+    backgroundColor: 'rgba(245,158,11,0.1)',
   },
-  optionText: { fontSize: 20, fontWeight: '600', color: colors.text },
+  optionText: { fontSize: 20, fontWeight: '700', color: colors.white },
   optionTextSelected: { color: colors.accent },
   highlight: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.amber,
+    color: colors.accent,
     marginTop: spacing.lg,
     textAlign: 'center',
   },
   stepRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: spacing.lg,
+    marginTop: 20,
     width: '100%',
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.sm,
   },
-  stepIcon: { fontSize: 36, marginRight: spacing.md },
+  stepIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
   stepContent: { flex: 1 },
-  stepTitle: { fontSize: 18, fontWeight: '600', color: colors.text },
-  stepDesc: { fontSize: 14, color: colors.textSecondary, marginTop: 2, lineHeight: 24 },
+  stepTitle: { fontSize: 17, fontWeight: '600', color: colors.white },
+  stepDesc: { fontSize: 14, color: colors.textSecondary, marginTop: 2 },
   serviceGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.md,
+    gap: 8,
+    marginTop: spacing.lg,
   },
   serviceChip: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 9,
     borderRadius: 20,
     borderWidth: 1.5,
     borderColor: colors.cardBorder,
@@ -383,34 +496,41 @@ const styles = StyleSheet.create({
   },
   serviceChipSelected: {
     borderColor: colors.accent,
-    backgroundColor: colors.accentDark + '30',
+    backgroundColor: 'rgba(245,158,11,0.1)',
   },
-  serviceIcon: { fontSize: 16 },
-  serviceName: { fontSize: 13, color: colors.text },
+  serviceName: { fontSize: 13, fontWeight: '500', color: colors.white },
   serviceNameSelected: { color: colors.accent },
+  crownCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(245,158,11,0.2)',
+  },
   paywallTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '800',
-    color: colors.text,
+    color: colors.white,
     textAlign: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: 6,
   },
   paywallSubtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.lg,
-    lineHeight: 24,
   },
-  featureList: { width: '100%', marginBottom: spacing.lg },
+  featureList: { width: '100%', marginBottom: spacing.md },
   featureRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
+    gap: 10,
+    marginBottom: 10,
   },
-  featureCheck: { fontSize: 16 },
-  featureText: { fontSize: 16, color: colors.text, lineHeight: 24 },
+  featureText: { fontSize: 15, color: colors.white },
   planCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -419,12 +539,23 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderRadius: 16,
     padding: 16,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: colors.cardBorder,
-    marginBottom: 12,
+    marginBottom: 10,
+    position: 'relative',
+    overflow: 'hidden',
   },
   planCardSelected: { borderColor: colors.accent },
-  planCardBest: { borderColor: colors.accent, borderWidth: 2.5 },
+  bestBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: colors.accent,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderBottomLeftRadius: 8,
+  },
+  bestBadgeText: { fontSize: 9, fontWeight: '700', color: '#000', letterSpacing: 0.5 },
   planLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   radio: {
     width: 22,
@@ -432,29 +563,36 @@ const styles = StyleSheet.create({
     borderRadius: 11,
     borderWidth: 2,
     borderColor: colors.cardBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  radioSelected: {
-    borderColor: colors.accent,
+  radioSelected: { borderColor: colors.accent },
+  radioInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     backgroundColor: colors.accent,
   },
-  planLabel: { fontSize: 17, fontWeight: '600', color: colors.text },
-  planNote: { fontSize: 13, color: colors.textSecondary },
-  planPrice: { fontSize: 17, fontWeight: '700', color: colors.accent },
+  planLabel: { fontSize: 16, fontWeight: '600', color: colors.white },
+  planNote: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
+  planPrice: { fontSize: 16, fontWeight: '700', color: colors.accent },
   purchaseButton: {
-    minHeight: 48,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    backgroundColor: colors.accent,
-    borderRadius: 16,
-    paddingVertical: 14,
     width: '100%',
     marginTop: spacing.md,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
-  purchaseButtonText: { fontSize: 18, fontWeight: '700', color: colors.white },
+  purchaseGradient: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+  },
+  purchaseButtonText: { fontSize: 18, fontWeight: '700', color: '#000' },
   freeText: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginTop: spacing.md,
+    marginTop: 14,
     textDecorationLine: 'underline',
   },
   legalText: {
@@ -462,29 +600,33 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     marginTop: spacing.sm,
-    paddingBottom: spacing.lg,
+    opacity: 0.7,
   },
   bottomBar: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.lg,
     alignItems: 'center',
   },
-  dots: { flexDirection: 'row', gap: 8, marginBottom: spacing.md },
+  dots: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.cardBorder,
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
   dotActive: { backgroundColor: colors.accent, width: 24 },
   nextButton: {
-    minHeight: 48,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    backgroundColor: colors.accent,
-    borderRadius: 16,
-    paddingVertical: 14,
     width: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
   },
-  nextButtonText: { fontSize: 18, fontWeight: '700', color: colors.white },
+  nextGradient: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    borderRadius: 16,
+  },
+  nextButtonText: { fontSize: 18, fontWeight: '700', color: '#fff' },
 });
