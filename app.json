@@ -15,7 +15,22 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.unsub.app"
+      "bundleIdentifier": "com.thomasdev.unsub",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Unsub uses Face ID to protect your subscription data with biometric lock.",
+        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalised ads to you."
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          }
+        ],
+        "NSPrivacyCollectedDataTypes": [],
+        "NSPrivacyTracking": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +38,8 @@
         "backgroundColor": "#0A0A0A"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.unsub.app"
+      "package": "com.thomasdev.unsub",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
