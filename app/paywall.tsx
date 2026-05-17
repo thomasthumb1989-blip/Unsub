@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, Pressable, Alert, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Pressable, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,6 +9,7 @@ import Animated, { FadeInDown, ZoomIn } from 'react-native-reanimated';
 import { saveSettings } from '../src/utils/storage';
 import { colors, spacing } from '../src/utils/theme';
 import { useTheme } from '../src/contexts/ThemeContext';
+import { purchaseLifetime, restorePurchases, isConfigured } from '../src/utils/purchases';
 
 const features = [
   { icon: 'infinite-outline' as const, text: 'Unlimited subscription tracking' },
@@ -20,22 +21,64 @@ const features = [
 
 export default function PaywallScreen() {
   const { colors: tc } = useTheme();
+  const [loading, setLoading] = useState(false);
+  const [restoring, setRestoring] = useState(false);
 
   const handlePurchase = async () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    // TODO: RevenueCat purchase flow
-    // Product ID: unsub_premium_lifetime
-    // UK: £3.99, US: $3.99
-    Alert.alert(
-      'Purchase',
-      'In-app purchase coming soon. RevenueCat integration needed.',
-      [{ text: 'OK' }]
-    );
+    if (loading) return;
+    setLoading(true);
+    try {
+      if (!isConfigured()) {
+        // Dev mode — skip purchase, just unlock
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        await saveSettings({ isPremium: true });
+        Alert.alert('Dev Mode', 'Premium unlocked (no API keys configured yet).', [
+          { text: 'OK', onPress: () => router.back() },
+        ]);
+        return;
+      }
+      const success = await purchaseLifetime();
+      if (success) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        await saveSettings({ isPremium: true });
+        router.back();
+      }
+    } catch (e: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (e?.message === 'NO_PACKAGE') {
+        Alert.alert('Unavailable', 'Purchase not available right now. Please try again later.');
+      } else {
+        Alert.alert('Error', 'Something went wrong. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRestore = async () => {
+    if (restoring) return;
+    setRestoring(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Alert.alert('Restore', 'No previous purchases found.');
+    try {
+      if (!isConfigured()) {
+        Alert.alert('Dev Mode', 'RevenueCat not configured yet.');
+        return;
+      }
+      const success = await restorePurchases();
+      if (success) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        await saveSettings({ isPremium: true });
+        Alert.alert('Restored!', 'Your premium access has been restored.', [
+          { text: 'OK', onPress: () => router.back() },
+        ]);
+      } else {
+        Alert.alert('No Purchases', 'No previous purchases found.');
+      }
+    } catch {
+      Alert.alert('Error', 'Could not restore purchases. Please try again.');
+    } finally {
+      setRestoring(false);
+    }
   };
 
   return (
@@ -96,19 +139,25 @@ export default function PaywallScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(500).delay(500)} style={{ width: '100%' }}>
-          <Pressable style={styles.purchaseButton} onPress={handlePurchase}>
+          <Pressable style={[styles.purchaseButton, loading && { opacity: 0.7 }]} onPress={handlePurchase} disabled={loading}>
             <LinearGradient
               colors={['#F59E0B', '#D97706']}
               style={styles.purchaseGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
             >
-              <Text style={styles.purchaseButtonText}>Unlock Premium — £3.99</Text>
+              {loading ? (
+                <ActivityIndicator color="#000" />
+              ) : (
+                <Text style={styles.purchaseButtonText}>Unlock Premium — £3.99</Text>
+              )}
             </LinearGradient>
           </Pressable>
 
-          <Pressable onPress={handleRestore} style={styles.restoreBtn}>
-            <Text style={[styles.restoreText, { color: tc.textSecondary }]}>Restore Purchases</Text>
+          <Pressable onPress={handleRestore} style={styles.restoreBtn} disabled={restoring}>
+            <Text style={[styles.restoreText, { color: tc.textSecondary }]}>
+              {restoring ? 'Restoring...' : 'Restore Purchases'}
+            </Text>
           </Pressable>
 
           <Text style={[styles.legalText, { color: tc.textSecondary }]}>

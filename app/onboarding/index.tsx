@@ -6,6 +6,8 @@ import {
   Pressable,
   Dimensions,
   FlatList,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,6 +17,7 @@ import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated';
 import { colors, spacing } from '../../src/utils/theme';
 import { saveSettings } from '../../src/utils/storage';
+import { purchaseLifetime, restorePurchases, isConfigured } from '../../src/utils/purchases';
 
 const { width } = Dimensions.get('window');
 const FREE_TRIAL_LIMIT = 4;
@@ -223,11 +226,35 @@ function Screen5({ onSelect }: { onSelect: (names: string[]) => void }) {
 }
 
 function PaywallScreen() {
+  const [loading, setLoading] = useState(false);
+
   const handlePurchase = async () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    // TODO: RevenueCat purchase — unsub_premium_lifetime £3.99/$3.99
-    await saveSettings({ onboardingComplete: true, isPremium: true });
-    router.replace('/(tabs)');
+    if (loading) return;
+    setLoading(true);
+    try {
+      if (!isConfigured()) {
+        // Dev mode — skip purchase, just unlock
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        await saveSettings({ onboardingComplete: true, isPremium: true });
+        router.replace('/(tabs)');
+        return;
+      }
+      const success = await purchaseLifetime();
+      if (success) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        await saveSettings({ onboardingComplete: true, isPremium: true });
+        router.replace('/(tabs)');
+      }
+    } catch (e: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (e?.message === 'NO_PACKAGE') {
+        Alert.alert('Unavailable', 'Purchase not available right now. Please try again later.');
+      } else {
+        Alert.alert('Error', 'Something went wrong. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFree = async () => {
@@ -280,14 +307,18 @@ function PaywallScreen() {
         <Text style={styles.planPrice}>£3.99</Text>
       </View>
 
-      <Pressable style={styles.purchaseButton} onPress={handlePurchase}>
+      <Pressable style={[styles.purchaseButton, loading && { opacity: 0.7 }]} onPress={handlePurchase} disabled={loading}>
         <LinearGradient
           colors={['#F59E0B', '#D97706']}
           style={styles.purchaseGradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
         >
-          <Text style={styles.purchaseButtonText}>Unlock Premium — £3.99</Text>
+          {loading ? (
+            <ActivityIndicator color="#000" />
+          ) : (
+            <Text style={styles.purchaseButtonText}>Unlock Premium — £3.99</Text>
+          )}
         </LinearGradient>
       </Pressable>
 
