@@ -2,14 +2,23 @@ import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable, TextInput } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Trial, getTrials, getSettings } from '../../src/utils/storage';
 import { colors, spacing, getCategoryColor, getCurrencySymbol } from '../../src/utils/theme';
 
 function LetterAvatar({ name, color }: { name: string; color: string }) {
   return (
-    <View style={[styles.avatar, { backgroundColor: color }]}>
+    <LinearGradient
+      colors={[color, `${color}99`]}
+      style={styles.avatar}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
       <Text style={styles.avatarLetter}>{name.charAt(0).toUpperCase()}</Text>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -39,8 +48,11 @@ export default function Subscriptions() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.brandLogo}>Unsub</Text>
-        <Pressable onPress={() => setShowSearch(!showSearch)} style={styles.searchBtn}>
-          <Text style={styles.searchIcon}>⌕</Text>
+        <Pressable
+          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShowSearch(!showSearch); }}
+          style={styles.searchBtn}
+        >
+          <Ionicons name={showSearch ? 'close' : 'search'} size={18} color={colors.textSecondary} />
         </Pressable>
       </View>
 
@@ -60,30 +72,33 @@ export default function Subscriptions() {
         keyExtractor={(t) => t.id}
         contentContainerStyle={styles.list}
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-        renderItem={({ item }) => {
+        renderItem={({ item, index }) => {
           const catColor = getCategoryColor(item.category);
           const cycle = item.cycle || 'monthly';
           return (
-            <Pressable
-              style={styles.card}
-              onPress={() => router.push(`/trial/${item.id}`)}
-            >
-              <View style={styles.cardLeft}>
-                <LetterAvatar name={item.serviceName} color={catColor} />
-                <View>
-                  <Text style={styles.cardName}>{item.serviceName}</Text>
-                  <Text style={styles.cardCategory}>{item.category || 'Other'}</Text>
+            <Animated.View entering={FadeInDown.duration(400).delay(index * 80)}>
+              <Pressable
+                style={styles.card}
+                onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push(`/trial/${item.id}`); }}
+              >
+                <View style={styles.cardLeft}>
+                  <LetterAvatar name={item.serviceName} color={catColor} />
+                  <View>
+                    <Text style={styles.cardName}>{item.serviceName}</Text>
+                    <Text style={styles.cardCategory}>{item.category || 'Other'}</Text>
+                  </View>
                 </View>
-              </View>
-              <View style={styles.cardRight}>
-                <Text style={styles.cardAmount}>{sym}{item.chargeAmount.toFixed(2)}</Text>
-                <Text style={styles.cardCycle}>{cycle.toUpperCase()}</Text>
-              </View>
-            </Pressable>
+                <View style={styles.cardRight}>
+                  <Text style={styles.cardAmount}>{sym}{item.chargeAmount.toFixed(2)}</Text>
+                  <Text style={styles.cardCycle}>{cycle.toUpperCase()}</Text>
+                </View>
+              </Pressable>
+            </Animated.View>
           );
         }}
         ListEmptyComponent={
           <View style={styles.empty}>
+            <Ionicons name="receipt-outline" size={40} color={colors.textSecondary} />
             <Text style={styles.emptyText}>No subscriptions yet</Text>
           </View>
         }
@@ -123,8 +138,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 0.5,
+    borderColor: colors.cardBorder,
   },
-  searchIcon: { fontSize: 20, color: colors.textSecondary },
   searchInput: {
     backgroundColor: colors.card,
     borderRadius: 12,
@@ -170,6 +186,6 @@ const styles = StyleSheet.create({
   },
   totalLabel: { fontSize: 15, color: colors.accent },
   totalAmount: { fontSize: 22, fontWeight: '800', color: colors.white },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 60, gap: 12 },
   emptyText: { fontSize: 16, color: colors.textSecondary, textAlign: 'center' },
 });

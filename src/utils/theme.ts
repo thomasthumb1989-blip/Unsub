@@ -54,8 +54,9 @@ export function getCategoryColor(category?: string): string {
 }
 
 export function getUrgencyColor(daysLeft: number): string {
-  if (daysLeft < 2) return colors.red;
-  if (daysLeft < 7) return colors.amber;
+  if (daysLeft <= 0) return colors.red;
+  if (daysLeft <= 3) return colors.red;
+  if (daysLeft <= 6) return colors.amber;
   return colors.green;
 }
 

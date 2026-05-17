@@ -9,11 +9,14 @@ export default function RootLayout() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    const timeout = setTimeout(() => setReady(true), 3000);
     (async () => {
-      await requestPermissions();
-      await initPurchases();
+      try { await requestPermissions(); } catch {}
+      try { await initPurchases(); } catch {}
+      clearTimeout(timeout);
       setReady(true);
     })();
+    return () => clearTimeout(timeout);
   }, []);
 
   if (!ready) return null;

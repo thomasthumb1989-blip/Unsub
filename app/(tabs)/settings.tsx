@@ -2,21 +2,32 @@ import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Linking, Switch, TextInput } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import * as Notifications from 'expo-notifications';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Settings, getSettings, saveSettings } from '../../src/utils/storage';
 import { restorePurchases } from '../../src/utils/purchases';
 import { colors, spacing } from '../../src/utils/theme';
 
 function SettingRow({ icon, label, right, onPress }: {
-  icon: string;
+  icon: keyof typeof Ionicons.glyphMap;
   label: string;
   right?: React.ReactNode;
   onPress?: () => void;
 }) {
   return (
-    <Pressable style={styles.row} onPress={onPress}>
+    <Pressable
+      style={styles.row}
+      onPress={() => {
+        if (onPress) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onPress();
+        }
+      }}
+    >
       <View style={styles.rowLeft}>
-        <Text style={styles.rowIcon}>{icon}</Text>
+        <Ionicons name={icon} size={20} color={colors.accent} />
         <Text style={styles.rowLabel}>{label}</Text>
       </View>
       {right}
@@ -46,6 +57,7 @@ export default function SettingsScreen() {
   const currencies = ['GBP', 'USD', 'EUR'];
 
   const handleCurrency = (c: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     saveSettings({ currency: c });
     setSettings({ ...settings, currency: c });
   };
@@ -79,6 +91,7 @@ export default function SettingsScreen() {
   };
 
   const handleRestore = async () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     const restored = await restorePurchases();
     if (restored) {
       saveSettings({ isPremium: true });
@@ -101,7 +114,8 @@ export default function SettingsScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.brandLogo}>Unsub</Text>
-        <View style={styles.profileSection}>
+
+        <Animated.View entering={FadeInDown.duration(500)} style={styles.profileSection}>
           <View style={styles.avatarCircle}>
             <Text style={styles.avatarText}>
               {(settings.userName || 'U').charAt(0).toUpperCase()}
@@ -130,18 +144,24 @@ export default function SettingsScreen() {
               <Text style={styles.profileName}>{settings.userName || 'Tap to set name'}</Text>
             </Pressable>
           )}
-        </View>
+          <View style={styles.planBadge}>
+            <Ionicons name={settings.isPremium ? 'diamond' : 'sparkles-outline'} size={14} color={settings.isPremium ? '#F59E0B' : colors.textSecondary} />
+            <Text style={[styles.planText, settings.isPremium && { color: '#F59E0B' }]}>
+              {settings.isPremium ? 'Premium' : 'Free Plan'}
+            </Text>
+          </View>
+        </Animated.View>
 
         <Text style={styles.sectionHeader}>ACCOUNT</Text>
-        <View style={styles.sectionCard}>
+        <Animated.View entering={FadeInDown.duration(500).delay(100)} style={styles.sectionCard}>
           <SettingRow
-            icon="👤"
+            icon="person-outline"
             label="Profile Info"
             right={<Text style={styles.rowValue}>{settings.isPremium ? 'Premium' : 'Free Plan'}</Text>}
           />
           <View style={styles.divider} />
           <SettingRow
-            icon="💳"
+            icon="card-outline"
             label="Currency"
             right={
               <View style={styles.currencyRow}>
@@ -159,12 +179,12 @@ export default function SettingsScreen() {
               </View>
             }
           />
-        </View>
+        </Animated.View>
 
         <Text style={styles.sectionHeader}>PREFERENCES</Text>
-        <View style={styles.sectionCard}>
+        <Animated.View entering={FadeInDown.duration(500).delay(200)} style={styles.sectionCard}>
           <SettingRow
-            icon="🔔"
+            icon="notifications-outline"
             label="Notifications"
             right={
               <Switch
@@ -177,7 +197,7 @@ export default function SettingsScreen() {
           />
           <View style={styles.divider} />
           <SettingRow
-            icon="🌙"
+            icon="moon-outline"
             label="Dark Mode"
             right={
               <Switch
@@ -190,24 +210,24 @@ export default function SettingsScreen() {
           />
           <View style={styles.divider} />
           <SettingRow
-            icon="🔒"
+            icon="lock-closed-outline"
             label="Privacy & Security"
-            right={<Text style={styles.rowArrow}>›</Text>}
+            right={<Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />}
             onPress={() => router.push('/privacy')}
           />
-        </View>
+        </Animated.View>
 
         <Text style={styles.sectionHeader}>SUPPORT</Text>
-        <View style={styles.sectionCard}>
+        <Animated.View entering={FadeInDown.duration(500).delay(300)} style={styles.sectionCard}>
           <SettingRow
-            icon="❓"
+            icon="help-circle-outline"
             label="Help Center"
-            right={<Text style={styles.rowArrow}>›</Text>}
+            right={<Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />}
             onPress={() => router.push('/help')}
           />
           <View style={styles.divider} />
           <SettingRow
-            icon="🔄"
+            icon="refresh-outline"
             label="Restore Purchases"
             onPress={handleRestore}
           />
@@ -215,20 +235,19 @@ export default function SettingsScreen() {
           {!settings.isPremium && (
             <>
               <SettingRow
-                icon="⭐"
+                icon="diamond-outline"
                 label="Upgrade to Premium"
                 onPress={() => router.push('/paywall')}
               />
               <View style={styles.divider} />
             </>
           )}
-          <Pressable style={styles.row} onPress={() => Linking.openURL('https://apps.apple.com')}>
-            <View style={styles.rowLeft}>
-              <Text style={styles.rowIcon}>⭐</Text>
-              <Text style={styles.rowLabel}>Rate Unsub</Text>
-            </View>
-          </Pressable>
-        </View>
+          <SettingRow
+            icon="star-outline"
+            label="Rate Unsub"
+            onPress={() => Linking.openURL('https://apps.apple.com')}
+          />
+        </Animated.View>
 
         <Text style={styles.version}>Unsub v1.0.0</Text>
       </ScrollView>
@@ -276,7 +295,17 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     minWidth: 200,
   },
-  profileEmail: { fontSize: 14, color: colors.textSecondary, marginTop: 4 },
+  planBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 8,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  planText: { fontSize: 12, color: colors.textSecondary, fontWeight: '600' },
   sectionHeader: {
     fontSize: 12,
     fontWeight: '600',
@@ -302,14 +331,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  rowIcon: { fontSize: 18 },
   rowLabel: { fontSize: 16, fontWeight: '500', color: colors.white, flexShrink: 1 },
   rowValue: { fontSize: 14, color: colors.textSecondary, flexShrink: 0 },
-  rowArrow: { fontSize: 20, color: colors.textSecondary },
   divider: {
     height: 0.5,
     backgroundColor: colors.cardBorder,
-    marginLeft: 48,
+    marginLeft: 52,
   },
   currencyRow: { flexDirection: 'row', gap: 6 },
   currencyChip: {
