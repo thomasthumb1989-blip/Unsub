@@ -252,6 +252,13 @@ export default function SettingsScreen() {
           />
           <View style={styles.divider} />
           <SettingRow
+            icon="mail-outline"
+            label="Scan Email for Subscriptions"
+            right={<Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />}
+            onPress={() => router.push('/scan')}
+          />
+          <View style={styles.divider} />
+          <SettingRow
             icon="download-outline"
             label="Export CSV"
             right={<Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />}
