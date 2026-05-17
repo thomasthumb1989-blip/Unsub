@@ -12,6 +12,7 @@ import { colors, spacing } from '../../src/utils/theme';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
+import * as LocalAuthentication from 'expo-local-authentication';
 
 function SettingRow({ icon, label, right, onPress, tc }: {
   icon: keyof typeof Ionicons.glyphMap;
@@ -239,7 +240,15 @@ export default function SettingsScreen() {
             right={
               <Switch
                 value={settings.biometricLock}
-                onValueChange={(val) => {
+                onValueChange={async (val) => {
+                  if (val) {
+                    const compatible = await LocalAuthentication.hasHardwareAsync();
+                    const enrolled = await LocalAuthentication.isEnrolledAsync();
+                    if (!compatible || !enrolled) {
+                      Alert.alert('Not Available', 'Your device does not support biometric authentication or has none enrolled.');
+                      return;
+                    }
+                  }
                   saveSettings({ biometricLock: val });
                   setSettings({ ...settings, biometricLock: val });
                 }}
