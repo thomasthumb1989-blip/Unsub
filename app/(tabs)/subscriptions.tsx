@@ -99,17 +99,20 @@ export default function Subscriptions() {
       </View>
 
       <View style={styles.statusRow}>
-        {(['active', 'cancelled', 'all'] as StatusFilter[]).map((s) => (
-          <Pressable
-            key={s}
-            style={[styles.statusChip, statusFilter === s && styles.statusChipActive, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
-            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setStatusFilter(s); }}
-          >
-            <Text style={[styles.statusChipText, statusFilter === s && styles.statusChipTextActive, { color: tc.textSecondary }]}>
-              {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
-            </Text>
-          </Pressable>
-        ))}
+        {(['active', 'cancelled', 'all'] as StatusFilter[]).map((s) => {
+          const isActive = statusFilter === s;
+          return (
+            <Pressable
+              key={s}
+              style={[styles.statusChip, { backgroundColor: isActive ? 'rgba(245,158,11,0.1)' : tc.card, borderColor: isActive ? tc.accent : tc.cardBorder }]}
+              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setStatusFilter(s); }}
+            >
+              <Text style={[styles.statusChipText, { color: isActive ? tc.accent : tc.textSecondary }]}>
+                {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
 
       {showSearch && (
@@ -124,41 +127,55 @@ export default function Subscriptions() {
       )}
 
       {showSort && (
-        <View style={styles.sortRow}>
-          {sortOptions.map((opt) => (
-            <Pressable
-              key={opt.mode}
-              style={[styles.sortChip, sortMode === opt.mode && styles.sortChipActive, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
-              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setSortMode(opt.mode); }}
-            >
-              <Ionicons name={opt.icon} size={14} color={sortMode === opt.mode ? tc.accent : tc.textSecondary} />
-              <Text style={[styles.sortChipText, sortMode === opt.mode && styles.sortChipTextActive, { color: tc.textSecondary }]}>{opt.label}</Text>
-            </Pressable>
-          ))}
-        </View>
+        <>
+          <View style={styles.sortRow}>
+            {sortOptions.map((opt) => {
+              const isActive = sortMode === opt.mode;
+              return (
+                <Pressable
+                  key={opt.mode}
+                  style={[styles.sortChip, { backgroundColor: isActive ? 'rgba(245,158,11,0.1)' : tc.card, borderColor: isActive ? tc.accent : tc.cardBorder }]}
+                  onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setSortMode(opt.mode); }}
+                >
+                  <Ionicons name={opt.icon} size={14} color={isActive ? tc.accent : tc.textSecondary} />
+                  <Text style={[styles.sortChipText, { color: isActive ? tc.accent : tc.textSecondary }]}>{opt.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          {categories.length > 1 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+              <Pressable
+                style={[styles.filterChip, { backgroundColor: !categoryFilter ? 'rgba(245,158,11,0.1)' : tc.card, borderColor: !categoryFilter ? tc.accent : tc.cardBorder }]}
+                onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setCategoryFilter(null); }}
+              >
+                <Text style={[styles.filterChipText, { color: !categoryFilter ? tc.accent : tc.textSecondary }]}>All</Text>
+              </Pressable>
+              {categories.map((cat) => {
+                const isActive = categoryFilter === cat;
+                return (
+                  <Pressable
+                    key={cat}
+                    style={[styles.filterChip, { backgroundColor: isActive ? 'rgba(245,158,11,0.1)' : tc.card, borderColor: isActive ? tc.accent : tc.cardBorder }]}
+                    onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setCategoryFilter(isActive ? null : cat); }}
+                  >
+                    <View style={[styles.filterDot, { backgroundColor: getCategoryColor(cat) }]} />
+                    <Text style={[styles.filterChipText, { color: isActive ? tc.accent : tc.textSecondary }]}>
+                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          )}
+        </>
       )}
 
-      {categories.length > 1 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
-          <Pressable
-            style={[styles.filterChip, !categoryFilter && styles.filterChipActive, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
-            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setCategoryFilter(null); }}
-          >
-            <Text style={[styles.filterChipText, !categoryFilter && styles.filterChipTextActive, { color: tc.textSecondary }]}>All</Text>
-          </Pressable>
-          {categories.map((cat) => (
-            <Pressable
-              key={cat}
-              style={[styles.filterChip, categoryFilter === cat && styles.filterChipActive, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}
-              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setCategoryFilter(categoryFilter === cat ? null : cat); }}
-            >
-              <View style={[styles.filterDot, { backgroundColor: getCategoryColor(cat) }]} />
-              <Text style={[styles.filterChipText, categoryFilter === cat && styles.filterChipTextActive, { color: tc.textSecondary }]}>
-                {cat.charAt(0).toUpperCase() + cat.slice(1)}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
+      {filtered.length > 0 && (
+        <View style={styles.totalRowTop}>
+          <Text style={styles.totalLabel}>{'Monthly Total (' + filtered.length + ')  '}</Text>
+          <Text style={[styles.totalAmount, { color: tc.white }]}>{sym}{monthlyTotal.toFixed(2)}{'  '}</Text>
+        </View>
       )}
 
       <FlashList
@@ -199,14 +216,7 @@ export default function Subscriptions() {
             <Text style={[styles.emptyText, { color: tc.textSecondary }]}>No subscriptions found</Text>
           </View>
         }
-        ListFooterComponent={
-          filtered.length > 0 ? (
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>{'Monthly Total (' + filtered.length + ')  '}</Text>
-              <Text style={[styles.totalAmount, { color: tc.white }]}>{sym}{monthlyTotal.toFixed(2)}{'  '}</Text>
-            </View>
-          ) : null
-        }
+        ListFooterComponent={null}
       />
     </SafeAreaView>
   );
@@ -290,16 +300,18 @@ const styles = StyleSheet.create({
   sortChipTextActive: { color: colors.accent },
   filterRow: {
     paddingHorizontal: spacing.lg,
-    paddingBottom: 10,
+    paddingBottom: 8,
     gap: 8,
+    height: 36,
   },
   filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: colors.card,
     borderWidth: 0.5,
     borderColor: colors.cardBorder,
@@ -325,12 +337,12 @@ const styles = StyleSheet.create({
   cardRight: { alignItems: 'flex-end' },
   cardAmount: { fontSize: 17, fontWeight: '700', color: colors.white },
   cardCycle: { fontSize: 10, color: colors.textSecondary, letterSpacing: 1, marginTop: 2 },
-  totalRow: {
+  totalRowTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 20,
-    paddingBottom: 10,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 10,
   },
   totalLabel: { fontSize: 15, color: colors.accent },
   totalAmount: { fontSize: 22, fontWeight: '800', color: colors.white },

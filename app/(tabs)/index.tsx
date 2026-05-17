@@ -74,8 +74,9 @@ export default function Dashboard() {
     (a, b) => new Date(a.trialEndDate).getTime() - new Date(b.trialEndDate).getTime()
   );
   const upcoming = sorted.slice(0, 3);
-  const highest = trials.length > 0 ? Math.max(...trials.map((t) => getHomeAmount(t))) : 0;
-  const lowest = trials.length > 0 ? Math.min(...trials.map((t) => getHomeAmount(t))) : 0;
+  const multiplier = viewMode === 'yearly' ? 12 : 1;
+  const highest = trials.length > 0 ? Math.max(...trials.map((t) => getHomeAmount(t))) * multiplier : 0;
+  const lowest = trials.length > 0 ? Math.min(...trials.map((t) => getHomeAmount(t))) * multiplier : 0;
 
   const categoryMap = new Map<string, number>();
   trials.forEach((t) => {
@@ -172,7 +173,7 @@ export default function Dashboard() {
               </View>
             </LinearGradient>
           </Pressable>
-          <Pressable style={{ flex: 1 }} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/(tabs)/history'); }}>
+          <Pressable style={{ flex: 1 }} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/calendar'); }}>
             <LinearGradient colors={[tc.card, tc.bg]} style={styles.summaryCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
               <Ionicons name="time-outline" size={18} color={tc.accent} />
               <Text style={[styles.summaryLabel, { color: tc.sectionHeader }]}>{'UPCOMING  '}</Text>

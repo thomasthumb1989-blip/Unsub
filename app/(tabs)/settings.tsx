@@ -158,7 +158,7 @@ export default function SettingsScreen() {
           <View style={styles.planBadge}>
             <Ionicons name={settings.isPremium ? 'diamond' : 'sparkles-outline'} size={14} color={settings.isPremium ? '#F59E0B' : tc.textSecondary} />
             <Text style={[styles.planText, settings.isPremium && { color: '#F59E0B' }]}>
-              {settings.isPremium ? 'Premium' : 'Free Plan'}
+              {settings.isPremium ? 'Premium  ' : 'Free Plan  '}
             </Text>
           </View>
         </Animated.View>
@@ -168,7 +168,7 @@ export default function SettingsScreen() {
           <SettingRow
             icon="person-outline"
             label="Profile Info"
-            right={<Text style={[styles.rowValue, { color: tc.textSecondary }]}>{settings.isPremium ? 'Premium' : 'Free Plan'}</Text>}
+            right={<Text style={[styles.rowValue, { color: tc.textSecondary }]}>{settings.isPremium ? 'Premium  ' : 'Free Plan  '}</Text>}
             tc={tc}
           />
           <View style={styles.divider} />
