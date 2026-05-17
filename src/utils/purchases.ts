@@ -8,7 +8,7 @@ try {
 export type { PurchasesPackage } from 'react-native-purchases';
 
 const API_KEYS = {
-  ios: 'test_YCDkkUommGZhtYnSncFmhiVWDMe',
+  ios: 'appl_jzZFvtpknQsIonJyFaLzwihWIGQ',
   android: 'test_YCDkkUommGZhtYnSncFmhiVWDMe',
 };
 
