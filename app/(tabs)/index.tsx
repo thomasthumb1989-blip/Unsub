@@ -11,6 +11,7 @@ import { Trial, getTrials, getSettings } from '../../src/utils/storage';
 import { colors, spacing, getCategoryColor, getCurrencySymbol, getUrgencyColor } from '../../src/utils/theme';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { ServiceLogo } from '../../src/components/ServiceLogo';
+import { getExchangeRates, convertCurrency, areRatesStale, refreshExchangeRates, ExchangeRates } from '../../src/utils/currency';
 
 function DonutChart({ total, segments, currency }: {
   total: number;
@@ -65,30 +66,36 @@ export default function Dashboard() {
   const [trials, setTrials] = useState<Trial[]>([]);
   const [settings, setSettings] = useState({ currency: 'GBP', totalSaved: 0 });
   const [viewMode, setViewMode] = useState<'monthly' | 'yearly'>('monthly');
+  const [rates, setRates] = useState<ExchangeRates>({ GBP: 1 });
 
   const load = useCallback(async () => {
-    const [t, s] = await Promise.all([getTrials(), getSettings()]);
+    const [t, s, r] = await Promise.all([getTrials(), getSettings(), getExchangeRates()]);
     setTrials(t.filter((tr) => tr.status === 'active'));
     setSettings(s);
+    setRates(r);
+    // Refresh rates in background if stale
+    areRatesStale().then((stale) => { if (stale) refreshExchangeRates().then(setRates); });
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const sym = getCurrencySymbol(settings.currency);
-  const monthlyTotal = trials.reduce((sum, t) => sum + t.chargeAmount, 0);
+  const homeCurrency = settings.currency;
+  const getHomeAmount = (t: Trial) => convertCurrency(t.chargeAmount, t.currency || homeCurrency, homeCurrency, rates);
+  const monthlyTotal = trials.reduce((sum, t) => sum + getHomeAmount(t), 0);
   const displayTotal = viewMode === 'yearly' ? monthlyTotal * 12 : monthlyTotal;
 
   const sorted = [...trials].sort(
     (a, b) => new Date(a.trialEndDate).getTime() - new Date(b.trialEndDate).getTime()
   );
   const upcoming = sorted.slice(0, 3);
-  const highest = trials.length > 0 ? Math.max(...trials.map((t) => t.chargeAmount)) : 0;
-  const lowest = trials.length > 0 ? Math.min(...trials.map((t) => t.chargeAmount)) : 0;
+  const highest = trials.length > 0 ? Math.max(...trials.map((t) => getHomeAmount(t))) : 0;
+  const lowest = trials.length > 0 ? Math.min(...trials.map((t) => getHomeAmount(t))) : 0;
 
   const categoryMap = new Map<string, number>();
   trials.forEach((t) => {
     const cat = t.category || 'other';
-    categoryMap.set(cat, (categoryMap.get(cat) || 0) + t.chargeAmount);
+    categoryMap.set(cat, (categoryMap.get(cat) || 0) + getHomeAmount(t));
   });
   const segments = Array.from(categoryMap.entries()).map(([cat, value]) => ({
     value: viewMode === 'yearly' ? value * 12 : value,
@@ -159,21 +166,25 @@ export default function Dashboard() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(500).delay(200)} style={styles.summaryRow}>
-          <Pressable style={styles.summaryCard} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/(tabs)/subscriptions'); }}>
-            <Ionicons name="layers-outline" size={18} color={colors.accent} />
-            <Text style={styles.summaryLabel}>YOUR SUBS</Text>
-            <View style={styles.summaryBottom}>
-              <Text style={styles.summaryValue}>{trials.length}</Text>
-              <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
-            </View>
+          <Pressable style={{ flex: 1 }} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/(tabs)/subscriptions'); }}>
+            <LinearGradient colors={['#1a1614', '#141416']} style={styles.summaryCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+              <Ionicons name="layers-outline" size={18} color={colors.accent} />
+              <Text style={styles.summaryLabel}>YOUR SUBS</Text>
+              <View style={styles.summaryBottom}>
+                <Text style={styles.summaryValue}>{trials.length}</Text>
+                <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+              </View>
+            </LinearGradient>
           </Pressable>
-          <Pressable style={styles.summaryCard} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/(tabs)/history'); }}>
-            <Ionicons name="time-outline" size={18} color={colors.accent} />
-            <Text style={styles.summaryLabel}>UPCOMING</Text>
-            <View style={styles.summaryBottom}>
-              <Text style={styles.summaryValue}>{upcoming.length}</Text>
-              <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
-            </View>
+          <Pressable style={{ flex: 1 }} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/(tabs)/history'); }}>
+            <LinearGradient colors={['#141618', '#141416']} style={styles.summaryCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+              <Ionicons name="time-outline" size={18} color={colors.accent} />
+              <Text style={styles.summaryLabel}>UPCOMING</Text>
+              <View style={styles.summaryBottom}>
+                <Text style={styles.summaryValue}>{upcoming.length}</Text>
+                <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+              </View>
+            </LinearGradient>
           </Pressable>
         </Animated.View>
 
@@ -221,20 +232,26 @@ export default function Dashboard() {
             return (
               <Animated.View key={trial.id} entering={FadeInDown.duration(400).delay(300 + index * 100)}>
                 <Pressable
-                  style={styles.billCard}
                   onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push(`/trial/${trial.id}`); }}
                 >
-                  <View style={styles.billLeft}>
-                    <ServiceLogo name={trial.serviceName} color={catColor} />
-                    <View>
-                      <Text style={styles.billName}>{trial.serviceName}</Text>
-                      <View style={styles.urgencyRow}>
-                        <View style={[styles.urgencyDot, { backgroundColor: urgencyColor }]} />
-                        <Text style={[styles.billDue, { color: urgencyColor }]}>{dueStr}</Text>
+                  <LinearGradient colors={['#161516', '#121214']} style={styles.billCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                    <View style={styles.billLeft}>
+                      <ServiceLogo name={trial.serviceName} color={catColor} />
+                      <View>
+                        <Text style={styles.billName}>{trial.serviceName}</Text>
+                        <View style={styles.urgencyRow}>
+                          <View style={[styles.urgencyDot, { backgroundColor: urgencyColor }]} />
+                          <Text style={[styles.billDue, { color: urgencyColor }]}>{dueStr}</Text>
+                        </View>
                       </View>
                     </View>
-                  </View>
-                  <Text style={styles.billAmount}>{sym}{trial.chargeAmount.toFixed(2)}</Text>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={styles.billAmount}>{sym}{getHomeAmount(trial).toFixed(2)}</Text>
+                      {trial.currency && trial.currency !== homeCurrency && (
+                        <Text style={styles.billForeignCurrency}>{getCurrencySymbol(trial.currency)}{trial.chargeAmount.toFixed(2)} {trial.currency}</Text>
+                      )}
+                    </View>
+                  </LinearGradient>
                 </Pressable>
               </Animated.View>
             );
@@ -340,11 +357,11 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     flex: 1,
-    backgroundColor: colors.card,
     borderRadius: 16,
     padding: 16,
     borderWidth: 0.5,
     borderColor: colors.cardBorder,
+    overflow: 'hidden',
   },
   summaryLabel: {
     fontSize: 11,
@@ -373,13 +390,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: colors.card,
     borderRadius: 16,
     padding: 16,
     marginHorizontal: spacing.lg,
     marginBottom: 10,
     borderWidth: 0.5,
     borderColor: colors.cardBorder,
+    overflow: 'hidden',
   },
   billLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   billName: { fontSize: 16, fontWeight: '600', color: colors.white },
@@ -387,6 +404,7 @@ const styles = StyleSheet.create({
   urgencyDot: { width: 6, height: 6, borderRadius: 3 },
   billDue: { fontSize: 13 },
   billAmount: { fontSize: 17, fontWeight: '700', color: colors.white },
+  billForeignCurrency: { fontSize: 11, color: colors.textSecondary, marginTop: 2 },
   insightsContainer: {
     marginHorizontal: spacing.lg,
     backgroundColor: colors.card,

@@ -18,6 +18,7 @@ import { addTrial, getSettings, getTrials, getCustomCategories } from '../../src
 import { scheduleTrialReminders } from '../../src/utils/notifications';
 import { searchServices, ServiceInfo } from '../../src/data/services';
 import { colors, spacing, getCurrencySymbol } from '../../src/utils/theme';
+import { SUPPORTED_CURRENCIES, CURRENCY_SYMBOLS } from '../../src/utils/currency';
 
 const FREE_LIMIT = 3;
 const DEFAULT_CATEGORIES = ['Music', 'Video', 'Cloud', 'Gaming', 'Software', 'Entertainment', 'Lifestyle', 'Other'];
@@ -34,6 +35,8 @@ export default function AddTrial() {
   const [cancelUrl, setCancelUrl] = useState('');
   const [trialDays, setTrialDays] = useState(30);
   const [category, setCategory] = useState('Other');
+  const [subCurrency, setSubCurrency] = useState('');
+  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [cycle, setCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [reminders, setReminders] = useState({ '3day': true, '1day': true, '2hour': true });
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -46,6 +49,9 @@ export default function AddTrial() {
         const merged = [...DEFAULT_CATEGORIES, ...custom.map((c) => c.charAt(0).toUpperCase() + c.slice(1))];
         setAllCategories(merged);
       }
+    });
+    getSettings().then((s) => {
+      if (!subCurrency) setSubCurrency(s.currency);
     });
   }, []);
 
@@ -102,7 +108,7 @@ export default function AddTrial() {
       serviceIcon,
       trialEndDate: endDate.toISOString(),
       chargeAmount: parseFloat(chargeAmount) || 0,
-      currency: settings.currency,
+      currency: subCurrency || settings.currency,
       cancelUrl,
       category: category.toLowerCase(),
       cycle,
@@ -189,7 +195,10 @@ export default function AddTrial() {
             {mode === 'trial' ? 'PRICE AFTER TRIAL' : 'MONTHLY PRICE'}
           </Text>
           <View style={styles.priceRow}>
-            <Text style={styles.priceSymbol}>£</Text>
+            <Pressable onPress={() => setShowCurrencyPicker(!showCurrencyPicker)} style={styles.currencyToggle}>
+              <Text style={styles.priceSymbol}>{CURRENCY_SYMBOLS[subCurrency] || subCurrency}</Text>
+              <Ionicons name="chevron-down" size={12} color={colors.textSecondary} />
+            </Pressable>
             <TextInput
               style={styles.priceInput}
               placeholder="0.00"
@@ -199,6 +208,21 @@ export default function AddTrial() {
               keyboardType="decimal-pad"
             />
           </View>
+          {showCurrencyPicker && (
+            <View style={styles.currencyPickerBox}>
+              {SUPPORTED_CURRENCIES.slice(0, 8).map((c) => (
+                <Pressable
+                  key={c}
+                  style={[styles.currencyOption, subCurrency === c && styles.currencyOptionActive]}
+                  onPress={() => { setSubCurrency(c); setShowCurrencyPicker(false); }}
+                >
+                  <Text style={[styles.currencyOptionText, subCurrency === c && styles.currencyOptionTextActive]}>
+                    {CURRENCY_SYMBOLS[c]} {c}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
 
           <Text style={styles.label}>CATEGORY</Text>
           <View style={styles.categoryGrid}>
@@ -410,7 +434,13 @@ const styles = StyleSheet.create({
     borderColor: colors.cardBorder,
     paddingHorizontal: 14,
   },
-  priceSymbol: { fontSize: 16, color: colors.textSecondary, marginRight: 4 },
+  currencyToggle: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingRight: 8, borderRightWidth: 0.5, borderRightColor: colors.cardBorder, marginRight: 8 },
+  priceSymbol: { fontSize: 16, color: colors.textSecondary },
+  currencyPickerBox: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
+  currencyOption: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: colors.card, borderWidth: 0.5, borderColor: colors.cardBorder },
+  currencyOptionActive: { borderColor: colors.accent, backgroundColor: colors.accent + '20' },
+  currencyOptionText: { fontSize: 13, fontWeight: '500', color: colors.textSecondary },
+  currencyOptionTextActive: { color: colors.accent },
   priceInput: {
     flex: 1,
     paddingVertical: 14,

@@ -10,6 +10,7 @@ import { Trial, getTrials, getSettings } from '../../src/utils/storage';
 import { colors, spacing, getCategoryColor, getCurrencySymbol, categoryColors } from '../../src/utils/theme';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { ServiceLogo } from '../../src/components/ServiceLogo';
+import { getExchangeRates, convertCurrency, ExchangeRates } from '../../src/utils/currency';
 
 type SortMode = 'name' | 'price-high' | 'price-low' | 'date';
 
@@ -18,6 +19,7 @@ type StatusFilter = 'active' | 'cancelled' | 'all';
 export default function Subscriptions() {
   const [allTrials, setAllTrials] = useState<Trial[]>([]);
   const [currency, setCurrency] = useState('GBP');
+  const [rates, setRates] = useState<ExchangeRates>({ GBP: 1 });
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
@@ -28,9 +30,10 @@ export default function Subscriptions() {
   useFocusEffect(
     useCallback(() => {
       (async () => {
-        const [t, s] = await Promise.all([getTrials(), getSettings()]);
+        const [t, s, r] = await Promise.all([getTrials(), getSettings(), getExchangeRates()]);
         setAllTrials(t);
         setCurrency(s.currency);
+        setRates(r);
       })();
     }, [])
   );
@@ -64,7 +67,7 @@ export default function Subscriptions() {
     }
   }, [trials, search, categoryFilter, sortMode]);
 
-  const monthlyTotal = filtered.reduce((sum, t) => sum + t.chargeAmount, 0);
+  const monthlyTotal = filtered.reduce((sum, t) => sum + convertCurrency(t.chargeAmount, t.currency || currency, currency, rates), 0);
 
   const sortOptions: { mode: SortMode; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
     { mode: 'name', label: 'Name', icon: 'text-outline' },

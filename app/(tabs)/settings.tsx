@@ -57,7 +57,7 @@ export default function SettingsScreen() {
 
   if (!settings) return null;
 
-  const currencies = ['GBP', 'USD', 'EUR'];
+  const currencies = ['GBP', 'USD', 'EUR', 'CAD', 'AUD'];
 
   const handleCurrency = (c: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
