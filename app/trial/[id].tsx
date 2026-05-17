@@ -19,8 +19,12 @@ import {
   saveSettings,
 } from '../../src/utils/storage';
 import { cancelTrialReminders } from '../../src/utils/notifications';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { colors, spacing, getCategoryColor, getUrgencyColor, getCurrencySymbol } from '../../src/utils/theme';
 import { ServiceLogo } from '../../src/components/ServiceLogo';
+import { getCancelGuide } from '../../src/data/cancelGuides';
 
 export default function TrialDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -100,11 +104,11 @@ export default function TrialDetail() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <Text style={styles.backText}>‹</Text>
+          <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={22} color={colors.white} />
           </Pressable>
           <Text style={styles.headerTitle}>Details</Text>
-          <View style={{ width: 32 }} />
+          <View style={{ width: 36 }} />
         </View>
 
         <View style={styles.center}>
@@ -150,18 +154,56 @@ export default function TrialDetail() {
           </View>
         </View>
 
+        {(() => {
+          const guide = getCancelGuide(trial.serviceName);
+          if (!guide) return null;
+          return (
+            <>
+              <Text style={styles.sectionHeader}>HOW TO CANCEL</Text>
+              <Animated.View entering={FadeInDown.duration(400)} style={styles.guideCard}>
+                {guide.steps.map((step, i) => (
+                  <View key={i} style={styles.guideStep}>
+                    <View style={styles.guideStepNumber}>
+                      <Text style={styles.guideStepNumText}>{i + 1}</Text>
+                    </View>
+                    <Text style={styles.guideStepText}>{step}</Text>
+                  </View>
+                ))}
+                {guide.note && (
+                  <View style={styles.guideNote}>
+                    <Ionicons name="information-circle-outline" size={16} color={colors.accent} />
+                    <Text style={styles.guideNoteText}>{guide.note}</Text>
+                  </View>
+                )}
+                {guide.url && (
+                  <Pressable
+                    style={styles.guideLink}
+                    onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); Linking.openURL(guide.url!); }}
+                  >
+                    <Ionicons name="open-outline" size={16} color={colors.accent} />
+                    <Text style={styles.guideLinkText}>Open cancellation page</Text>
+                  </Pressable>
+                )}
+              </Animated.View>
+            </>
+          );
+        })()}
+
         <View style={styles.actions}>
           {trial.cancelUrl && (
-            <Pressable style={styles.cancelNowBtn} onPress={handleCancel}>
-              <Text style={styles.cancelNowText}>Cancel Subscription →</Text>
+            <Pressable style={styles.cancelNowBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); handleCancel(); }}>
+              <Ionicons name="close-circle-outline" size={20} color={colors.white} />
+              <Text style={styles.cancelNowText}>Cancel Subscription</Text>
             </Pressable>
           )}
 
-          <Pressable style={styles.cancelledBtn} onPress={handleCancelled}>
+          <Pressable style={styles.cancelledBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); handleCancelled(); }}>
+            <Ionicons name="checkmark-circle-outline" size={20} color={colors.white} />
             <Text style={styles.cancelledText}>I've Cancelled</Text>
           </Pressable>
 
-          <Pressable style={styles.deleteBtn} onPress={handleDelete}>
+          <Pressable style={styles.deleteBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); handleDelete(); }}>
+            <Ionicons name="trash-outline" size={18} color={colors.textSecondary} />
             <Text style={styles.deleteText}>Delete</Text>
           </Pressable>
         </View>
@@ -180,8 +222,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
-  backBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
-  backText: { fontSize: 28, color: colors.textSecondary },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    borderColor: colors.cardBorder,
+  },
   headerTitle: { fontSize: 18, fontWeight: '700', color: colors.white },
   center: {
     alignItems: 'center',
@@ -240,27 +290,75 @@ const styles = StyleSheet.create({
     marginTop: 24,
     gap: 10,
   },
+  guideCard: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    marginHorizontal: spacing.lg,
+    padding: 16,
+    borderWidth: 0.5,
+    borderColor: colors.cardBorder,
+    gap: 12,
+  },
+  guideStep: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  guideStepNumber: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(245,158,11,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  guideStepNumText: { fontSize: 12, fontWeight: '700', color: colors.accent },
+  guideStepText: { fontSize: 14, color: colors.textSecondary, flex: 1, lineHeight: 20 },
+  guideNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingTop: 8,
+    borderTopWidth: 0.5,
+    borderTopColor: colors.cardBorder,
+  },
+  guideNoteText: { fontSize: 13, color: colors.accent, flex: 1, fontStyle: 'italic' },
+  guideLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingTop: 8,
+    borderTopWidth: 0.5,
+    borderTopColor: colors.cardBorder,
+  },
+  guideLinkText: { fontSize: 14, fontWeight: '600', color: colors.accent },
   cancelNowBtn: {
     backgroundColor: colors.red,
     borderRadius: 14,
     minHeight: 48,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
   },
   cancelNowText: { fontSize: 16, fontWeight: '700', color: colors.white },
   cancelledBtn: {
     backgroundColor: colors.accent,
     borderRadius: 14,
     minHeight: 48,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
   },
   cancelledText: { fontSize: 16, fontWeight: '700', color: colors.white },
   deleteBtn: {
     borderRadius: 14,
     minHeight: 44,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 6,
     borderWidth: 0.5,
     borderColor: colors.cardBorder,
   },
