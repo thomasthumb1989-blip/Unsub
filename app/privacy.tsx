@@ -1,14 +1,25 @@
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { colors, spacing } from '../src/utils/theme';
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, icon, children, delay = 0 }: {
+  title: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  children: React.ReactNode;
+  delay?: number;
+}) {
   return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+    <Animated.View entering={FadeInDown.duration(400).delay(delay)} style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <Ionicons name={icon} size={20} color={colors.accent} />
+        <Text style={styles.sectionTitle}>{title}</Text>
+      </View>
       {children}
-    </View>
+    </Animated.View>
   );
 }
 
@@ -17,43 +28,53 @@ export default function PrivacyScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <Text style={styles.backText}>‹</Text>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
+            style={styles.backBtn}
+          >
+            <Ionicons name="arrow-back" size={22} color={colors.white} />
           </Pressable>
           <Text style={styles.headerTitle}>Privacy & Security</Text>
-          <View style={{ width: 32 }} />
+          <View style={{ width: 36 }} />
         </View>
 
-        <Section title="Your Data Stays On Device">
+        <Section title="Your Data Stays On Device" icon="phone-portrait-outline" delay={100}>
           <Text style={styles.body}>
             Unsub does not use cloud servers, user accounts, or analytics tracking.
-            All your subscription data is stored locally on your device using
-            AsyncStorage. We never collect, transmit, or sell your personal information.
+            All your subscription data is stored locally on your device. We never collect,
+            transmit, or sell your personal information.
           </Text>
         </Section>
 
-        <Section title="What We Store">
+        <Section title="What We Store" icon="server-outline" delay={200}>
           <Text style={styles.body}>
             Unsub stores the following data locally on your device only:
           </Text>
           <View style={styles.bulletList}>
-            <Text style={styles.bullet}>Subscription names, prices, and end dates</Text>
-            <Text style={styles.bullet}>Your currency preference</Text>
-            <Text style={styles.bullet}>Notification reminder settings</Text>
-            <Text style={styles.bullet}>Premium status (if purchased)</Text>
-            <Text style={styles.bullet}>Dark mode preference</Text>
+            {[
+              'Subscription names, prices, and end dates',
+              'Your currency preference',
+              'Notification reminder settings',
+              'Premium status (if purchased)',
+              'Dark mode preference',
+            ].map((item, i) => (
+              <View key={i} style={styles.bulletRow}>
+                <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+                <Text style={styles.bulletText}>{item}</Text>
+              </View>
+            ))}
           </View>
           <Text style={styles.body}>
             Deleting the app removes all stored data permanently.
           </Text>
         </Section>
 
-        <Section title="Permissions">
+        <Section title="Permissions" icon="key-outline" delay={300}>
           <Text style={styles.body}>
             Unsub requests only one permission:
           </Text>
           <View style={styles.permissionCard}>
-            <Text style={styles.permissionIcon}>🔔</Text>
+            <Ionicons name="notifications-outline" size={22} color={colors.accent} />
             <View style={styles.permissionContent}>
               <Text style={styles.permissionTitle}>Notifications</Text>
               <Text style={styles.permissionDesc}>
@@ -64,7 +85,7 @@ export default function PrivacyScreen() {
           </View>
         </Section>
 
-        <Section title="Third-Party Services">
+        <Section title="Third-Party Services" icon="globe-outline" delay={400}>
           <Text style={styles.body}>
             If you purchase Premium, the transaction is handled by Apple or Google
             via their respective app stores. Unsub does not process or store
@@ -78,7 +99,7 @@ export default function PrivacyScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
-  scroll: { paddingBottom: spacing.xxl },
+  scroll: { paddingBottom: 60 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -87,34 +108,51 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     marginBottom: spacing.lg,
   },
-  backBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
-  backText: { fontSize: 28, color: colors.textSecondary },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    borderColor: colors.cardBorder,
+  },
   headerTitle: { fontSize: 18, fontWeight: '700', color: colors.white },
   section: {
     marginHorizontal: spacing.lg,
-    marginBottom: spacing.xl,
+    marginBottom: 24,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.white,
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     marginBottom: 12,
   },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.white,
+  },
   body: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textSecondary,
-    lineHeight: 24,
+    lineHeight: 22,
     marginBottom: 8,
   },
   bulletList: {
     marginVertical: 8,
-    paddingLeft: 8,
+    gap: 8,
   },
-  bullet: {
-    fontSize: 15,
+  bulletRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  bulletText: {
+    fontSize: 14,
     color: colors.textSecondary,
-    lineHeight: 28,
-    paddingLeft: 8,
+    flex: 1,
   },
   permissionCard: {
     flexDirection: 'row',
@@ -125,9 +163,9 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: colors.cardBorder,
     gap: 12,
+    alignItems: 'flex-start',
   },
-  permissionIcon: { fontSize: 24 },
   permissionContent: { flex: 1 },
-  permissionTitle: { fontSize: 16, fontWeight: '600', color: colors.white, marginBottom: 4 },
-  permissionDesc: { fontSize: 14, color: colors.textSecondary, lineHeight: 22 },
+  permissionTitle: { fontSize: 15, fontWeight: '600', color: colors.white, marginBottom: 4 },
+  permissionDesc: { fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
 });

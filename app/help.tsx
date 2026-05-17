@@ -2,42 +2,56 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { colors, spacing } from '../src/utils/theme';
 
 const FAQ = [
   {
     q: 'How do I add a trial?',
     a: 'Tap the + button on the tab bar, then search for the service or type the name manually. Set the trial length, price, and reminders, then tap "Add Free Trial" or "Add Subscription".',
+    icon: 'add-circle-outline' as const,
   },
   {
     q: 'How do reminders work?',
     a: 'Unsub sends you push notifications before your trial ends. By default you get reminders at 3 days, 1 day, and 2 hours before expiry. You can customise which reminders are active when adding a trial.',
+    icon: 'notifications-outline' as const,
   },
   {
     q: 'What happens when I upgrade?',
     a: 'Free users can track up to 3 active subscriptions. Upgrading to Premium removes this limit and gives you unlimited tracking, savings history, and priority support.',
+    icon: 'diamond-outline' as const,
   },
   {
     q: 'Can I get a refund?',
     a: 'Refunds are handled by Apple (iOS) or Google (Android) through their respective app stores. Go to your purchase history in the App Store or Google Play to request a refund.',
+    icon: 'card-outline' as const,
   },
   {
     q: 'How do I cancel a subscription?',
     a: 'Open the subscription from your list, then tap "Cancel Subscription" to go directly to the service\'s cancellation page. Once cancelled, tap "I\'ve Cancelled" to log it and track your savings.',
+    icon: 'close-circle-outline' as const,
   },
 ];
 
-function AccordionItem({ q, a }: { q: string; a: string }) {
+function AccordionItem({ q, a, icon, index }: { q: string; a: string; icon: keyof typeof Ionicons.glyphMap; index: number }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <Pressable style={styles.faqCard} onPress={() => setOpen(!open)}>
-      <View style={styles.faqHeader}>
-        <Text style={styles.faqQuestion}>{q}</Text>
-        <Text style={styles.faqArrow}>{open ? '−' : '+'}</Text>
-      </View>
-      {open && <Text style={styles.faqAnswer}>{a}</Text>}
-    </Pressable>
+    <Animated.View entering={FadeInDown.duration(400).delay(100 + index * 80)}>
+      <Pressable
+        style={styles.faqCard}
+        onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setOpen(!open); }}
+      >
+        <View style={styles.faqHeader}>
+          <Ionicons name={icon} size={20} color={colors.accent} style={{ marginRight: 12 }} />
+          <Text style={styles.faqQuestion}>{q}</Text>
+          <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={18} color={colors.accent} />
+        </View>
+        {open && <Text style={styles.faqAnswer}>{a}</Text>}
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -46,25 +60,31 @@ export default function HelpScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <Text style={styles.backText}>‹</Text>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
+            style={styles.backBtn}
+          >
+            <Ionicons name="arrow-back" size={22} color={colors.white} />
           </Pressable>
           <Text style={styles.headerTitle}>Help Center</Text>
-          <View style={{ width: 32 }} />
+          <View style={{ width: 36 }} />
         </View>
 
         <Text style={styles.sectionLabel}>FREQUENTLY ASKED QUESTIONS</Text>
 
         {FAQ.map((item, i) => (
-          <AccordionItem key={i} q={item.q} a={item.a} />
+          <AccordionItem key={i} q={item.q} a={item.a} icon={item.icon} index={i} />
         ))}
 
-        <View style={styles.contactCard}>
-          <Text style={styles.contactTitle}>Still need help?</Text>
-          <Text style={styles.contactBody}>
-            Contact us at support@unsub.app and we'll get back to you within 24 hours.
-          </Text>
-        </View>
+        <Animated.View entering={FadeInDown.duration(400).delay(600)}>
+          <View style={styles.contactCard}>
+            <Ionicons name="mail-outline" size={24} color={colors.accent} />
+            <Text style={styles.contactTitle}>Still need help?</Text>
+            <Text style={styles.contactBody}>
+              Contact us at support@unsub.app and we'll get back to you within 24 hours.
+            </Text>
+          </View>
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -72,7 +92,7 @@ export default function HelpScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
-  scroll: { paddingBottom: spacing.xxl },
+  scroll: { paddingBottom: 60 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -81,8 +101,16 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     marginBottom: spacing.lg,
   },
-  backBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
-  backText: { fontSize: 28, color: colors.textSecondary },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    borderColor: colors.cardBorder,
+  },
   headerTitle: { fontSize: 18, fontWeight: '700', color: colors.white },
   sectionLabel: {
     fontSize: 12,
@@ -103,19 +131,18 @@ const styles = StyleSheet.create({
   },
   faqHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  faqQuestion: { fontSize: 16, fontWeight: '600', color: colors.white, flex: 1, paddingRight: 12 },
-  faqArrow: { fontSize: 20, fontWeight: '600', color: colors.accent },
+  faqQuestion: { fontSize: 15, fontWeight: '600', color: colors.white, flex: 1, paddingRight: 8 },
   faqAnswer: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textSecondary,
-    lineHeight: 24,
+    lineHeight: 22,
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 0.5,
     borderTopColor: colors.cardBorder,
+    marginLeft: 32,
   },
   contactCard: {
     backgroundColor: colors.card,
@@ -126,7 +153,8 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: colors.cardBorder,
     alignItems: 'center',
+    gap: 8,
   },
-  contactTitle: { fontSize: 16, fontWeight: '700', color: colors.white, marginBottom: 8 },
+  contactTitle: { fontSize: 16, fontWeight: '700', color: colors.white },
   contactBody: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 22 },
 });
