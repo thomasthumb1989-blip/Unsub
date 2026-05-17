@@ -31,12 +31,11 @@
   "submit": {
     "production": {
       "ios": {
-        "ascAppId": "",
-        "appleTeamId": ""
-      },
-      "android": {
-        "serviceAccountKeyPath": "",
-        "track": "internal"
+        "ascAppId": "6770328775",
+        "appleTeamId": "3DTDL5TJK5",
+        "ascApiKeyPath": "SubscriptionKey_R2H3427QAY.p8",
+        "ascApiKeyId": "R2H3427QAY",
+        "ascApiKeyIssuerId": "5d6c56df-5efc-4ebd-bcb6-6e16a90aeca9"
       }
     }
   }
