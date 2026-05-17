@@ -280,11 +280,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
   },
   detailLabel: { fontSize: 15, color: colors.textSecondary },
   detailValue: { fontSize: 15, fontWeight: '600', color: colors.white },
-  divider: { height: 0.5, backgroundColor: colors.cardBorder, marginLeft: 16 },
+  divider: { height: 0.5, backgroundColor: colors.cardBorder, marginLeft: 20 },
   actions: {
     paddingHorizontal: spacing.lg,
     marginTop: 24,

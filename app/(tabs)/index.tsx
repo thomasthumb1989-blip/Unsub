@@ -251,6 +251,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
   brandLogo: {
     fontSize: 22,

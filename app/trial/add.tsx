@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { v4 as uuidv4 } from 'uuid';
 import { addTrial, getSettings, getTrials } from '../../src/utils/storage';
 import { scheduleTrialReminders } from '../../src/utils/notifications';
@@ -114,11 +116,11 @@ export default function AddTrial() {
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
-            <Pressable onPress={() => router.back()} style={styles.backBtn}>
-              <Text style={styles.backText}>‹</Text>
+            <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }} style={styles.backBtn}>
+              <Ionicons name="arrow-back" size={22} color={colors.white} />
             </Pressable>
             <Text style={styles.title}>Add Subscription</Text>
-            <View style={{ width: 32 }} />
+            <View style={{ width: 36 }} />
           </View>
 
           <View style={styles.modeToggle}>
@@ -303,8 +305,16 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     marginBottom: spacing.lg,
   },
-  backBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
-  backText: { fontSize: 28, color: colors.textSecondary },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    borderColor: colors.cardBorder,
+  },
   title: { fontSize: 18, fontWeight: '700', color: colors.white },
   modeToggle: {
     flexDirection: 'row',

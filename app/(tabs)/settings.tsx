@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#F59E0B',
     letterSpacing: -1,
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
   profileSection: {

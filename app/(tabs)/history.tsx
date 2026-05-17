@@ -38,7 +38,9 @@ export default function HistoryScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Text style={styles.brandLogo}>Unsub</Text>
+      <View style={styles.header}>
+        <Text style={styles.brandLogo}>Unsub</Text>
+      </View>
       <Text style={styles.pageTitle}>History</Text>
 
       <Animated.View entering={FadeInDown.duration(500)}>
@@ -91,20 +93,24 @@ export default function HistoryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+  },
   brandLogo: {
     fontSize: 22,
     fontWeight: '800',
     color: '#F59E0B',
     letterSpacing: -1,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
   },
   pageTitle: {
     fontSize: 24,
     fontWeight: '800',
     color: colors.white,
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
     paddingBottom: spacing.md,
   },
   summaryCard: {
