@@ -127,6 +127,36 @@ export async function removeCustomCategory(category: string) {
   await saveSettings({ customCategories: cats.filter((c) => c !== category) });
 }
 
+export function trialsToShareText(trials: Trial[], currency: string): string {
+  const active = trials.filter((t) => t.status === 'active');
+  const sym = currency === 'GBP' ? '£' : currency === 'EUR' ? '€' : '$';
+  const monthly = active.reduce((sum, t) => sum + t.chargeAmount, 0);
+  const yearly = monthly * 12;
+
+  let text = `📊 My Subscription Summary\n`;
+  text += `━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `${active.length} active subscriptions\n`;
+  text += `${sym}${monthly.toFixed(2)}/month · ${sym}${yearly.toFixed(2)}/year\n\n`;
+
+  const byCategory = new Map<string, Trial[]>();
+  active.forEach((t) => {
+    const cat = (t.category || 'other');
+    byCategory.set(cat, [...(byCategory.get(cat) || []), t]);
+  });
+
+  for (const [cat, subs] of byCategory) {
+    const catTotal = subs.reduce((s, t) => s + t.chargeAmount, 0);
+    text += `${cat.charAt(0).toUpperCase() + cat.slice(1)} — ${sym}${catTotal.toFixed(2)}/mo\n`;
+    subs.forEach((t) => {
+      text += `  • ${t.serviceName} ${sym}${t.chargeAmount.toFixed(2)}\n`;
+    });
+    text += `\n`;
+  }
+
+  text += `Tracked with Unsub 📱`;
+  return text;
+}
+
 export function trialsToCSV(trials: Trial[]): string {
   const headers = ['Service', 'Amount', 'Currency', 'Category', 'Cycle', 'End Date', 'Status', 'Created'];
   const rows = trials.map((t) => [

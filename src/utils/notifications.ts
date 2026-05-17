@@ -27,20 +27,20 @@ export async function scheduleTrialReminders(trial: Trial) {
     {
       key: '3day',
       offset: 3 * 24 * 60 * 60 * 1000,
-      title: `${trial.serviceName} renews in 3 days`,
-      body: `You'll be charged ${amount}. Open Unsub to cancel or keep it.`,
+      title: `⏰ ${trial.serviceName} renews in 3 days`,
+      body: `You'll be charged ${amount}/${trial.cycle || 'month'}. Cancel now or keep it — your call.`,
     },
     {
       key: '1day',
       offset: 1 * 24 * 60 * 60 * 1000,
-      title: `${trial.serviceName} charges ${amount} tomorrow`,
-      body: `Last full day to cancel. Tap to see how.`,
+      title: `⚠️ ${trial.serviceName} charges ${amount} TOMORROW`,
+      body: `Last chance to cancel before you're charged. Tap for cancel guide.`,
     },
     {
       key: '2hour',
       offset: 2 * 60 * 60 * 1000,
-      title: `${trial.serviceName} charges in 2 hours`,
-      body: `Final reminder — ${amount} will be charged soon. Cancel now or ignore to keep.`,
+      title: `🚨 ${trial.serviceName} charges in 2 HOURS`,
+      body: `${amount} charge incoming. This is your final reminder — act now or you'll be billed.`,
     },
   ];
 

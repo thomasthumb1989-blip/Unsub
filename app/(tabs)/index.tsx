@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Share } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Svg, { Circle } from 'react-native-svg';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Trial, getTrials, getSettings } from '../../src/utils/storage';
+import { Trial, getTrials, getSettings, trialsToShareText } from '../../src/utils/storage';
 import { colors, spacing, getCategoryColor, getCurrencySymbol, getUrgencyColor } from '../../src/utils/theme';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { ServiceLogo } from '../../src/components/ServiceLogo';
@@ -114,12 +114,23 @@ export default function Dashboard() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.topRow}>
           <Text style={styles.brandLogo}>Unsub</Text>
-          <Pressable
-            style={styles.calendarBtn}
-            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/calendar'); }}
-          >
-            <Ionicons name="calendar-outline" size={18} color={colors.textSecondary} />
-          </Pressable>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <Pressable
+              style={styles.calendarBtn}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                Share.share({ message: trialsToShareText(trials, settings.currency) });
+              }}
+            >
+              <Ionicons name="share-outline" size={18} color={colors.textSecondary} />
+            </Pressable>
+            <Pressable
+              style={styles.calendarBtn}
+              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/calendar'); }}
+            >
+              <Ionicons name="calendar-outline" size={18} color={colors.textSecondary} />
+            </Pressable>
+          </View>
         </View>
 
         <Animated.View entering={FadeInDown.duration(500).delay(100)}>
