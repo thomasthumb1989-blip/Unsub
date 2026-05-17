@@ -228,6 +228,13 @@ export default function SettingsScreen() {
           />
           <View style={styles.divider} />
           <SettingRow
+            icon="apps-outline"
+            label="App Icon"
+            right={<Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />}
+            onPress={() => router.push('/icons')}
+          />
+          <View style={styles.divider} />
+          <SettingRow
             icon="lock-closed-outline"
             label="Privacy & Security"
             right={<Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />}

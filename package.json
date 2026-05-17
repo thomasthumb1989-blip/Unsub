@@ -14,6 +14,7 @@
     "@shopify/react-native-skia": "^2.6.2",
     "@types/uuid": "^10.0.0",
     "expo": "~54.0.33",
+    "expo-alternate-app-icons": "^8.0.0",
     "expo-blur": "~15.0.8",
     "expo-constants": "~18.0.13",
     "expo-file-system": "~19.0.22",

@@ -36,6 +36,22 @@
           "icon": "./assets/icon.png",
           "color": "#F59E0B"
         }
+      ],
+      [
+        "expo-alternate-app-icons",
+        {
+          "alternateIcons": {
+            "Ocean": "./assets/icons/icon-lettermark-blue-dark.png",
+            "Rose": "./assets/icons/icon-lettermark-red-dark.png",
+            "Mint": "./assets/icons/icon-lettermark-green-dark.png",
+            "Violet": "./assets/icons/icon-lettermark-purple-dark.png",
+            "Minimal": "./assets/icons/icon-minimal-amber-dark.png",
+            "Badge": "./assets/icons/icon-badge-amber-dark.png",
+            "Outline": "./assets/icons/icon-outline-amber-dark.png",
+            "Light": "./assets/icons/icon-lettermark-amber-light.png",
+            "LightBadge": "./assets/icons/icon-badge-blue-light.png"
+          }
+        }
       ]
     ]
   }
