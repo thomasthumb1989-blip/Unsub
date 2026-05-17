@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Trial, getTrials, getSettings } from '../../src/utils/storage';
 import { colors, spacing, getCurrencySymbol } from '../../src/utils/theme';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -36,8 +37,10 @@ export default function HistoryScreen() {
   const sym = getCurrencySymbol(currency);
   const totalSaved = cancelled.reduce((sum, t) => sum + t.chargeAmount, 0);
 
+  const { colors: tc } = useTheme();
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: tc.bg }]} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.brandLogo}>Unsub</Text>
       </View>

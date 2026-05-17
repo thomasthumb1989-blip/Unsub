@@ -7,6 +7,7 @@ import {
   Linking,
   Alert,
   ScrollView,
+  TextInput,
 } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,6 +15,7 @@ import {
   Trial,
   getTrials,
   updateTrial,
+  updateTrialPrice,
   deleteTrial,
   getSettings,
   saveSettings,
@@ -31,6 +33,8 @@ export default function TrialDetail() {
   const [trial, setTrial] = useState<Trial | null>(null);
   const [countdown, setCountdown] = useState('');
   const [currency, setCurrency] = useState('GBP');
+  const [editingPrice, setEditingPrice] = useState(false);
+  const [priceInput, setPriceInput] = useState('');
 
   useFocusEffect(
     useCallback(() => {
@@ -67,6 +71,20 @@ export default function TrialDetail() {
   const urgencyColor = getUrgencyColor(daysLeft);
   const catColor = getCategoryColor(trial.category);
   const sym = getCurrencySymbol(currency);
+
+  const handlePriceEdit = async () => {
+    const newAmount = parseFloat(priceInput);
+    if (isNaN(newAmount) || newAmount < 0) {
+      setEditingPrice(false);
+      return;
+    }
+    if (newAmount !== trial.chargeAmount) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      await updateTrialPrice(trial.id, newAmount);
+      setTrial({ ...trial, chargeAmount: newAmount, priceHistory: [...(trial.priceHistory || []), { date: new Date().toISOString(), oldAmount: trial.chargeAmount, newAmount }] });
+    }
+    setEditingPrice(false);
+  };
 
   const handleCancel = () => {
     if (trial.cancelUrl) Linking.openURL(trial.cancelUrl);
@@ -116,10 +134,31 @@ export default function TrialDetail() {
           <Text style={styles.name}>{trial.serviceName}</Text>
           <Text style={styles.categoryLabel}>{trial.category || 'Other'}</Text>
 
-          <View style={styles.priceCard}>
-            <Text style={styles.priceAmount}>{sym}{trial.chargeAmount.toFixed(2)}</Text>
-            <Text style={styles.priceCycle}> per {trial.cycle || 'month'}</Text>
-          </View>
+          <Pressable
+            style={styles.priceCard}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setPriceInput(trial.chargeAmount.toFixed(2)); setEditingPrice(true); }}
+          >
+            {editingPrice ? (
+              <View style={styles.priceEditRow}>
+                <Text style={styles.priceAmount}>{sym}</Text>
+                <TextInput
+                  style={styles.priceEditInput}
+                  value={priceInput}
+                  onChangeText={setPriceInput}
+                  keyboardType="decimal-pad"
+                  autoFocus
+                  onSubmitEditing={handlePriceEdit}
+                  onBlur={handlePriceEdit}
+                />
+              </View>
+            ) : (
+              <>
+                <Text style={styles.priceAmount}>{sym}{trial.chargeAmount.toFixed(2)}</Text>
+                <Text style={styles.priceCycle}> per {trial.cycle || 'month'}</Text>
+                <Ionicons name="pencil-outline" size={14} color={colors.textSecondary} style={{ marginLeft: 8 }} />
+              </>
+            )}
+          </Pressable>
 
           <View style={[styles.countdownPill, { backgroundColor: urgencyColor + '20' }]}>
             <Text style={[styles.countdownText, { color: urgencyColor }]}>{countdown}</Text>
@@ -153,6 +192,31 @@ export default function TrialDetail() {
             </Text>
           </View>
         </View>
+
+        {trial.priceHistory && trial.priceHistory.length > 0 && (
+          <>
+            <Text style={styles.sectionHeader}>PRICE HISTORY</Text>
+            <View style={styles.detailCard}>
+              {trial.priceHistory.map((change, i) => (
+                <View key={i}>
+                  {i > 0 && <View style={styles.divider} />}
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>
+                      {new Date(change.date).toLocaleDateString()}
+                    </Text>
+                    <View style={styles.priceChangeRow}>
+                      <Text style={styles.priceOld}>{sym}{change.oldAmount.toFixed(2)}</Text>
+                      <Ionicons name="arrow-forward" size={12} color={colors.textSecondary} />
+                      <Text style={[styles.detailValue, change.newAmount > change.oldAmount && { color: colors.red }, change.newAmount < change.oldAmount && { color: colors.success }]}>
+                        {sym}{change.newAmount.toFixed(2)}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         {(() => {
           const guide = getCancelGuide(trial.serviceName);
@@ -252,6 +316,18 @@ const styles = StyleSheet.create({
   },
   priceAmount: { fontSize: 36, fontWeight: '800', color: colors.white },
   priceCycle: { fontSize: 16, color: colors.textSecondary },
+  priceEditRow: { flexDirection: 'row', alignItems: 'baseline' },
+  priceEditInput: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: colors.white,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.accent,
+    minWidth: 100,
+    paddingVertical: 2,
+  },
+  priceChangeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  priceOld: { fontSize: 15, color: colors.textSecondary, textDecorationLine: 'line-through' },
   countdownPill: {
     paddingHorizontal: 20,
     paddingVertical: 8,

@@ -9,6 +9,7 @@ import Svg, { Circle } from 'react-native-svg';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Trial, getTrials, getSettings } from '../../src/utils/storage';
 import { colors, spacing, getCategoryColor, getCurrencySymbol, getUrgencyColor } from '../../src/utils/theme';
+import { useTheme } from '../../src/contexts/ThemeContext';
 import { ServiceLogo } from '../../src/components/ServiceLogo';
 
 function DonutChart({ total, segments, currency }: {
@@ -99,8 +100,10 @@ export default function Dashboard() {
     setViewMode(viewMode === 'monthly' ? 'yearly' : 'monthly');
   };
 
+  const { colors: tc } = useTheme();
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: tc.bg }]} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.topRow}>
           <Text style={styles.brandLogo}>Unsub</Text>

@@ -6,6 +6,7 @@ import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../src/utils/theme';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 const TAB_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   index: 'grid-outline',
@@ -24,6 +25,7 @@ const TAB_ICONS_ACTIVE: Record<string, keyof typeof Ionicons.glyphMap> = {
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const insets = useSafeAreaInsets();
   const bottomPad = Math.max(insets.bottom, 12);
+  const { colors: tc } = useTheme();
 
   return (
     <View style={{ position: 'relative' }}>
@@ -39,7 +41,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           <Ionicons name="add" size={28} color="#fff" />
         </TouchableOpacity>
       </View>
-      <BlurView intensity={40} tint="dark" style={[styles.tabBar, { paddingBottom: bottomPad }]}>
+      <BlurView intensity={40} tint={tc.bg === '#0A0A0A' ? 'dark' : 'light'} style={[styles.tabBar, { paddingBottom: bottomPad, backgroundColor: tc.bg === '#0A0A0A' ? 'rgba(17,17,17,0.85)' : 'rgba(255,255,255,0.85)' }]}>
         {state.routes.map((route: any, index: number) => {
           const isFocused = state.index === index;
           const iconName = isFocused

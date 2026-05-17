@@ -1,5 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export type PriceChange = {
+  date: string;
+  oldAmount: number;
+  newAmount: number;
+};
+
 export type Trial = {
   id: string;
   serviceName: string;
@@ -13,6 +19,7 @@ export type Trial = {
   reminders: { '3day': boolean; '1day': boolean; '2hour': boolean };
   status: 'active' | 'cancelled' | 'charged';
   createdAt: string;
+  priceHistory?: PriceChange[];
 };
 
 export type Settings = {
@@ -23,6 +30,7 @@ export type Settings = {
   darkMode: boolean;
   userName: string;
   biometricLock: boolean;
+  customCategories?: string[];
 };
 
 const TRIALS_KEY = '@unsub_trials';
@@ -79,6 +87,44 @@ export async function saveSettings(settings: Partial<Settings>) {
     SETTINGS_KEY,
     JSON.stringify({ ...current, ...settings })
   );
+}
+
+export async function updateTrialPrice(id: string, newAmount: number) {
+  const trials = await getTrials();
+  const idx = trials.findIndex((t) => t.id === id);
+  if (idx === -1) return trials;
+
+  const trial = trials[idx];
+  if (trial.chargeAmount !== newAmount) {
+    const change: PriceChange = {
+      date: new Date().toISOString(),
+      oldAmount: trial.chargeAmount,
+      newAmount,
+    };
+    trial.priceHistory = [...(trial.priceHistory || []), change];
+    trial.chargeAmount = newAmount;
+    await saveTrials(trials);
+  }
+  return trials;
+}
+
+export async function getCustomCategories(): Promise<string[]> {
+  const settings = await getSettings();
+  return settings.customCategories || [];
+}
+
+export async function addCustomCategory(category: string) {
+  const settings = await getSettings();
+  const cats = settings.customCategories || [];
+  if (!cats.includes(category.toLowerCase())) {
+    await saveSettings({ customCategories: [...cats, category.toLowerCase()] });
+  }
+}
+
+export async function removeCustomCategory(category: string) {
+  const settings = await getSettings();
+  const cats = settings.customCategories || [];
+  await saveSettings({ customCategories: cats.filter((c) => c !== category) });
 }
 
 export function trialsToCSV(trials: Trial[]): string {

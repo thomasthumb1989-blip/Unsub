@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,13 +14,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { v4 as uuidv4 } from 'uuid';
-import { addTrial, getSettings, getTrials } from '../../src/utils/storage';
+import { addTrial, getSettings, getTrials, getCustomCategories } from '../../src/utils/storage';
 import { scheduleTrialReminders } from '../../src/utils/notifications';
 import { searchServices, ServiceInfo } from '../../src/data/services';
 import { colors, spacing, getCurrencySymbol } from '../../src/utils/theme';
 
 const FREE_LIMIT = 3;
-const DISPLAY_CATEGORIES = ['Music', 'Video', 'Cloud', 'Gaming', 'Software', 'Entertainment', 'Lifestyle', 'Other'];
+const DEFAULT_CATEGORIES = ['Music', 'Video', 'Cloud', 'Gaming', 'Software', 'Entertainment', 'Lifestyle', 'Other'];
 
 type Mode = 'trial' | 'subscription';
 
@@ -38,6 +38,16 @@ export default function AddTrial() {
   const [reminders, setReminders] = useState({ '3day': true, '1day': true, '2hour': true });
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [nextBillDate, setNextBillDate] = useState('');
+  const [allCategories, setAllCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+
+  useEffect(() => {
+    getCustomCategories().then((custom) => {
+      if (custom.length > 0) {
+        const merged = [...DEFAULT_CATEGORIES, ...custom.map((c) => c.charAt(0).toUpperCase() + c.slice(1))];
+        setAllCategories(merged);
+      }
+    });
+  }, []);
 
   const handleSearch = (text: string) => {
     setQuery(text);
@@ -192,7 +202,7 @@ export default function AddTrial() {
 
           <Text style={styles.label}>CATEGORY</Text>
           <View style={styles.categoryGrid}>
-            {DISPLAY_CATEGORIES.map((c) => (
+            {allCategories.map((c) => (
               <Pressable
                 key={c}
                 style={[styles.categoryChip, category === c && styles.categoryChipActive]}

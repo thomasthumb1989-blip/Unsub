@@ -9,6 +9,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Settings, getSettings, saveSettings, getTrials, trialsToCSV } from '../../src/utils/storage';
 import { restorePurchases } from '../../src/utils/purchases';
 import { colors, spacing } from '../../src/utils/theme';
+import { useTheme } from '../../src/contexts/ThemeContext';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 
@@ -104,16 +105,15 @@ export default function SettingsScreen() {
     }
   };
 
+  const { toggle: toggleTheme, colors: tc } = useTheme();
+
   const handleDarkMode = (val: boolean) => {
-    saveSettings({ darkMode: val });
+    toggleTheme();
     setSettings({ ...settings, darkMode: val });
-    if (!val) {
-      Alert.alert('Light Mode', 'Light mode will be fully supported in a future update. Your preference has been saved.');
-    }
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: tc.bg }]} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.brandLogo}>Unsub</Text>
 
@@ -237,6 +237,13 @@ export default function SettingsScreen() {
 
         <Text style={styles.sectionHeader}>DATA</Text>
         <Animated.View entering={FadeInDown.duration(500).delay(250)} style={styles.sectionCard}>
+          <SettingRow
+            icon="pricetags-outline"
+            label="Manage Categories"
+            right={<Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />}
+            onPress={() => router.push('/categories')}
+          />
+          <View style={styles.divider} />
           <SettingRow
             icon="download-outline"
             label="Export CSV"

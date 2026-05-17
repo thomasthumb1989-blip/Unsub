@@ -6,6 +6,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import { getSettings, getTrials } from '../src/utils/storage';
 import { requestPermissions, scheduleWeeklyDigest, scheduleMonthlyDigest } from '../src/utils/notifications';
 import { initPurchases } from '../src/utils/purchases';
+import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
 
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
@@ -55,12 +56,21 @@ export default function RootLayout() {
   }
 
   return (
+    <ThemeProvider>
+      <ThemedApp />
+    </ThemeProvider>
+  );
+}
+
+function ThemedApp() {
+  const { isDark, colors } = useTheme();
+  return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: '#0A0A0A' },
+          contentStyle: { backgroundColor: colors.bg },
           animation: 'slide_from_right',
         }}
       />
