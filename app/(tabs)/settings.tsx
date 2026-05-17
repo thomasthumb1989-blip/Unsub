@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 // expo-notifications lazy-loaded to avoid Expo Go crash on Android
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Settings, getSettings, saveSettings, getTrials, trialsToCSV } from '../../src/utils/storage';
+import { Settings, getSettings, saveSettings, getTrials, trialsToCSV, loadMockData, clearMockData } from '../../src/utils/storage';
 import { restorePurchases } from '../../src/utils/purchases';
 import { colors, spacing } from '../../src/utils/theme';
 import { useTheme } from '../../src/contexts/ThemeContext';
@@ -352,6 +352,33 @@ export default function SettingsScreen() {
         </Animated.View>
 
         <Text style={[styles.version, { color: tc.textSecondary }]}>Unsub v1.0.0</Text>
+
+        {__DEV__ && (
+          <Animated.View entering={FadeInDown.duration(400).delay(500)} style={[styles.section, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
+            <Text style={[styles.sectionTitle, { color: '#EF4444' }]}>DEV TOOLS</Text>
+            <SettingRow
+              icon="images-outline"
+              label="Load Screenshot Data"
+              onPress={async () => {
+                await loadMockData();
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                Alert.alert('Done', 'Mock data loaded. Go take screenshots!');
+              }}
+              tc={tc}
+            />
+            <View style={styles.divider} />
+            <SettingRow
+              icon="trash-outline"
+              label="Clear Screenshot Data"
+              onPress={async () => {
+                await clearMockData();
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                Alert.alert('Done', 'Mock data cleared.');
+              }}
+              tc={tc}
+            />
+          </Animated.View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

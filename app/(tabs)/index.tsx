@@ -5,7 +5,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-// SVG removed — using bar-based spend display
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Trial, getTrials, getSettings, trialsToShareText } from '../../src/utils/storage';
 import { colors, spacing, getCategoryColor, getCurrencySymbol, getUrgencyColor } from '../../src/utils/theme';
@@ -19,10 +18,8 @@ function SpendRing({ total, segments, currency, tc }: {
   currency: string;
   tc: any;
 }) {
-  const width = 260;
-  const height = 100;
   const barHeight = 8;
-  const barWidth = width - 40;
+  const barWidth = 220;
   const sym = getCurrencySymbol(currency);
   let accumulated = 0;
 
@@ -220,6 +217,16 @@ export default function Dashboard() {
           <View style={styles.emptyState}>
             <Ionicons name="calendar-outline" size={40} color={tc.textSecondary} />
             <Text style={[styles.emptyText, { color: tc.textSecondary }]}>No upcoming subscriptions</Text>
+            <Pressable
+              style={styles.emptyBtn}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/trial/add');
+              }}
+            >
+              <Ionicons name="add-circle-outline" size={18} color="#F59E0B" />
+              <Text style={styles.emptyBtnText}>Add your first subscription</Text>
+            </Pressable>
           </View>
         ) : (
           upcoming.map((trial, index) => {
@@ -411,4 +418,17 @@ const styles = StyleSheet.create({
   insightAmount: { fontSize: 12, fontWeight: '600', color: colors.white, minWidth: 45, textAlign: 'right' },
   emptyState: { alignItems: 'center', paddingVertical: 40, gap: 12 },
   emptyText: { fontSize: 16, color: colors.textSecondary },
+  emptyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+    backgroundColor: 'rgba(245,158,11,0.1)',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(245,158,11,0.2)',
+  },
+  emptyBtnText: { fontSize: 14, fontWeight: '600', color: '#F59E0B' },
 });

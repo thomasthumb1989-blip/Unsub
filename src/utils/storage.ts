@@ -157,6 +157,36 @@ export function trialsToShareText(trials: Trial[], currency: string): string {
   return text;
 }
 
+/** Load mock data for App Store screenshots. Dev only. */
+export async function loadMockData() {
+  const now = new Date();
+  const future = (days: number) => { const d = new Date(now); d.setDate(d.getDate() + days); return d.toISOString(); };
+  const past = (days: number) => { const d = new Date(now); d.setDate(d.getDate() - days); return d.toISOString(); };
+  const base = { serviceIcon: '', cancelUrl: '', reminders: { '3day': true, '1day': true, '2hour': true }, createdAt: past(60) };
+
+  const mockTrials: Trial[] = [
+    { ...base, id: 'mock-1', serviceName: 'Netflix', chargeAmount: 10.99, currency: 'GBP', trialEndDate: future(3), category: 'entertainment', status: 'active', cycle: 'monthly' },
+    { ...base, id: 'mock-2', serviceName: 'Spotify', chargeAmount: 9.99, currency: 'GBP', trialEndDate: future(8), category: 'entertainment', status: 'active', cycle: 'monthly' },
+    { ...base, id: 'mock-3', serviceName: 'iCloud+', chargeAmount: 2.99, currency: 'GBP', trialEndDate: future(12), category: 'cloud', status: 'active', cycle: 'monthly' },
+    { ...base, id: 'mock-4', serviceName: 'Adobe Creative Cloud', chargeAmount: 49.99, currency: 'GBP', trialEndDate: future(5), category: 'productivity', status: 'active', cycle: 'monthly' },
+    { ...base, id: 'mock-5', serviceName: 'ChatGPT Plus', chargeAmount: 16.00, currency: 'GBP', trialEndDate: future(15), category: 'productivity', status: 'active', cycle: 'monthly' },
+    { ...base, id: 'mock-6', serviceName: 'PureGym', chargeAmount: 24.99, currency: 'GBP', trialEndDate: future(1), category: 'health', status: 'active', cycle: 'monthly' },
+    { ...base, id: 'mock-7', serviceName: 'Amazon Prime', chargeAmount: 8.99, currency: 'GBP', trialEndDate: future(20), category: 'shopping', status: 'active', cycle: 'monthly' },
+    { ...base, id: 'mock-c1', serviceName: 'Disney+', chargeAmount: 7.99, currency: 'GBP', trialEndDate: past(14), category: 'entertainment', status: 'cancelled', cycle: 'monthly' },
+    { ...base, id: 'mock-c2', serviceName: 'YouTube Premium', chargeAmount: 11.99, currency: 'GBP', trialEndDate: past(30), category: 'entertainment', status: 'cancelled', cycle: 'monthly' },
+    { ...base, id: 'mock-c3', serviceName: 'Notion', chargeAmount: 8.00, currency: 'GBP', trialEndDate: past(45), category: 'productivity', status: 'cancelled', cycle: 'monthly' },
+  ];
+
+  await saveTrials(mockTrials);
+  await saveSettings({ totalSaved: 27.98, isPremium: true, onboardingComplete: true });
+}
+
+/** Remove all mock data. */
+export async function clearMockData() {
+  await saveTrials([]);
+  await saveSettings({ totalSaved: 0 });
+}
+
 export function trialsToCSV(trials: Trial[]): string {
   const headers = ['Service', 'Amount', 'Currency', 'Category', 'Cycle', 'End Date', 'Status', 'Created'];
   const rows = trials.map((t) => [
