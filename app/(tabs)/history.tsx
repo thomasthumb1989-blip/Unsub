@@ -42,7 +42,7 @@ export default function HistoryScreen() {
 
       <Animated.View entering={FadeInDown.duration(500)}>
         <LinearGradient
-          colors={['#064E3B', '#1C1C1E']}
+          colors={['#1a1a0a', '#161618']}
           style={styles.summaryCard}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   brandLogo: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#10B981',
+    color: '#F59E0B',
     letterSpacing: -1,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,

@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   brandLogo: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#10B981',
+    color: '#F59E0B',
     letterSpacing: -1,
     paddingHorizontal: 20,
     paddingTop: spacing.md,

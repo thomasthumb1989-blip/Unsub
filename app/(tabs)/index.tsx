@@ -117,7 +117,7 @@ export default function Dashboard() {
 
         <Animated.View entering={FadeInDown.duration(500).delay(100)}>
           <LinearGradient
-            colors={['#1C1C1E', '#111113']}
+            colors={['#1a1810', '#161618']}
             style={styles.chartCard}
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   brandLogo: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#10B981',
+    color: '#F59E0B',
     letterSpacing: -1,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
