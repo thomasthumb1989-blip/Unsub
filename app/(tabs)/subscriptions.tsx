@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Trial, getTrials, getSettings } from '../../src/utils/storage';
-import { colors, spacing, getCategoryColor, getCurrencySymbol, categoryColors } from '../../src/utils/theme';
+import { colors, spacing, getCategoryColor, getCurrencySymbol } from '../../src/utils/theme';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { ServiceLogo } from '../../src/components/ServiceLogo';
 import { getExchangeRates, convertCurrency, ExchangeRates } from '../../src/utils/currency';

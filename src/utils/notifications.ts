@@ -17,7 +17,7 @@ async function getNotifications() {
         }),
       });
     } catch (e) {
-      console.warn('expo-notifications not available:', e);
+      if (__DEV__) console.warn('expo-notifications not available:', e);
       return null;
     }
   }

@@ -314,15 +314,6 @@ const styles = StyleSheet.create({
   toggleTextActive: {
     color: colors.white,
   },
-  spendAmount: { fontSize: 36, fontWeight: '800', color: colors.white, textAlign: 'center' },
-  spendBarBg: {
-    marginTop: 12,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    width: 220,
-    overflow: 'hidden',
-  },
   donutLabel: { fontSize: 11, color: colors.textSecondary, marginTop: 8, letterSpacing: 1, paddingRight: 2 },
   statsRow: {
     flexDirection: 'row',
@@ -389,11 +380,8 @@ const styles = StyleSheet.create({
   },
   billLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   billName: { fontSize: 16, fontWeight: '600', color: colors.white },
-  urgencyRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
-  urgencyDot: { width: 6, height: 6, borderRadius: 3 },
   billDue: { fontSize: 13 },
   billAmount: { fontSize: 17, fontWeight: '700', color: colors.white },
-  billForeignCurrency: { fontSize: 11, color: colors.textSecondary, marginTop: 2 },
   insightsContainer: {
     marginHorizontal: spacing.lg,
     backgroundColor: colors.card,

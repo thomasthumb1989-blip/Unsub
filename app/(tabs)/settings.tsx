@@ -332,7 +332,12 @@ export default function SettingsScreen() {
           <SettingRow
             icon="star-outline"
             label="Rate Unsub"
-            onPress={() => Linking.openURL('https://apps.apple.com')}
+            onPress={() => {
+              // TODO: Replace with actual App Store URL once published
+              // iOS: https://apps.apple.com/app/idXXXXXXXXXX?action=write-review
+              // Android: https://play.google.com/store/apps/details?id=com.unsub.app
+              Alert.alert('Coming Soon', 'Rating will be available once the app is published on the App Store.');
+            }}
             tc={tc}
           />
         </Animated.View>

@@ -7,7 +7,6 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
-  TextInput,
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -28,8 +27,6 @@ import {
   clearToken,
 } from '../src/utils/gmailScan';
 
-const GOOGLE_CLIENT_ID = '844730517869-e4tbp99plmfu9hvsu3p25e671hpgh90h.apps.googleusercontent.com';
-
 type ScanState = 'idle' | 'authenticating' | 'scanning' | 'results' | 'error';
 
 export default function ScanScreen() {
@@ -41,7 +38,7 @@ export default function ScanScreen() {
   const { colors: tc } = useTheme();
 
   const handleConnect = async () => {
-    if (!GOOGLE_CLIENT_ID) {
+    if (!isGmailConfigured()) {
       Alert.alert(
         'Setup Required',
         'Gmail scanning requires a Google Cloud project. See the setup guide in Settings > Help.',
@@ -64,15 +61,22 @@ export default function ScanScreen() {
       const WebBrowser = require('expo-web-browser');
       WebBrowser.maybeCompleteAuthSession();
 
+      const GOOGLE_CLIENT_ID = '844730517869-e4tbp99plmfu9hvsu3p25e671hpgh90h.apps.googleusercontent.com';
       const redirectUri = AuthSession.makeRedirectUri({ scheme: 'unsub' });
-      const result = await AuthSession.startAsync({
-        authUrl:
-          `https://accounts.google.com/o/oauth2/v2/auth` +
-          `?client_id=${GOOGLE_CLIENT_ID}` +
-          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-          `&response_type=token` +
-          `&scope=${encodeURIComponent('https://www.googleapis.com/auth/gmail.readonly')}`,
+
+      const discovery = {
+        authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+        tokenEndpoint: 'https://oauth2.googleapis.com/token',
+      };
+
+      const request = new AuthSession.AuthRequest({
+        clientId: GOOGLE_CLIENT_ID,
+        redirectUri,
+        scopes: ['https://www.googleapis.com/auth/gmail.readonly'],
+        responseType: AuthSession.ResponseType.Token,
       });
+
+      const result = await request.promptAsync(discovery);
 
       if (result.type === 'success' && result.params?.access_token) {
         handleScanWithToken(result.params.access_token);

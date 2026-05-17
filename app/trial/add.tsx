@@ -122,6 +122,7 @@ export default function AddTrial() {
     if (mode === 'trial') {
       await scheduleTrialReminders(trial);
     }
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.back();
   };
 
@@ -457,7 +458,6 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.cardBorder,
   },
   suggestionName: { fontSize: 15, fontWeight: '500', color: colors.white },
-  suggestionDetail: { fontSize: 13, color: colors.textSecondary },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',

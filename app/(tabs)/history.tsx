@@ -20,6 +20,7 @@ function formatDate(iso: string): string {
 export default function HistoryScreen() {
   const [cancelled, setCancelled] = useState<Trial[]>([]);
   const [currency, setCurrency] = useState('GBP');
+  const [savedFromSettings, setSavedFromSettings] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -30,12 +31,15 @@ export default function HistoryScreen() {
           .sort((a, b) => new Date(b.trialEndDate).getTime() - new Date(a.trialEndDate).getTime());
         setCancelled(list);
         setCurrency(settings.currency);
+        setSavedFromSettings(settings.totalSaved || 0);
       })();
     }, [])
   );
 
   const sym = getCurrencySymbol(currency);
-  const totalSaved = cancelled.reduce((sum, t) => sum + t.chargeAmount, 0);
+  // Use settings.totalSaved if available (accumulated over time), fall back to sum of cancelled amounts
+  const sumFromCancelled = cancelled.reduce((sum, t) => sum + t.chargeAmount, 0);
+  const totalSaved = savedFromSettings > 0 ? savedFromSettings : sumFromCancelled;
 
   const { colors: tc } = useTheme();
 

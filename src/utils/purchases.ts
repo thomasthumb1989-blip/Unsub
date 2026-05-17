@@ -102,8 +102,25 @@ export async function checkPremiumStatus(): Promise<boolean> {
  * Check if RevenueCat is configured (API keys set).
  * Used to show placeholder UI during development.
  */
+/**
+ * Check if RevenueCat has production keys configured.
+ * Test keys (test_) work for sandbox but dev-mode bypass stays active.
+ * Placeholder keys (YOUR_) mean SDK not configured at all.
+ */
 export function isConfigured(): boolean {
   if (!Purchases) return false;
   const key = Platform.OS === 'ios' ? API_KEYS.ios : API_KEYS.android;
-  return !key.startsWith('YOUR_');
+  if (key.startsWith('YOUR_')) return false;
+  // Test keys work with sandbox — treat as configured
+  return true;
+}
+
+/**
+ * Check if using production (non-test) API keys.
+ * Use this to gate real money flows vs sandbox testing.
+ */
+export function isProduction(): boolean {
+  if (!isConfigured()) return false;
+  const key = Platform.OS === 'ios' ? API_KEYS.ios : API_KEYS.android;
+  return !key.startsWith('test_');
 }

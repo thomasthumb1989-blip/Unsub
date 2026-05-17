@@ -21,7 +21,7 @@ const FAQ = [
   },
   {
     q: 'What happens when I upgrade?',
-    a: 'Free users can track up to 3 active subscriptions. Upgrading to Premium removes this limit and gives you unlimited tracking, savings history, and priority support.',
+    a: 'Free users can track up to 4 active subscriptions. Upgrading to Premium removes this limit and gives you unlimited tracking, savings history, and priority support.',
     icon: 'diamond-outline' as const,
   },
   {
