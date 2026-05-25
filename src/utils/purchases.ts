@@ -69,13 +69,33 @@ export async function purchasePackage(pkg: any): Promise<boolean> {
 /**
  * One-call purchase flow: get lifetime package + purchase it.
  * Returns true if purchase succeeded.
+ * Throws with user-friendly message if package unavailable.
  */
 export async function purchaseLifetime(): Promise<boolean> {
+  if (!Purchases) {
+    throw new Error('STORE_UNAVAILABLE');
+  }
   const pkg = await getLifetimePackage();
   if (!pkg) {
     throw new Error('NO_PACKAGE');
   }
   return purchasePackage(pkg);
+}
+
+/**
+ * Get user-facing error message for purchase errors.
+ */
+export function getPurchaseErrorMessage(error: any): string {
+  const code = error?.message || error?.code || '';
+  switch (code) {
+    case 'NO_PACKAGE':
+      return 'This purchase is temporarily unavailable. Please try again later or contact support.';
+    case 'STORE_UNAVAILABLE':
+      return 'The App Store is not available on this device. Please try on a real device.';
+    default:
+      if (error?.userCancelled) return '';
+      return 'Something went wrong with the purchase. Please try again.';
+  }
 }
 
 export async function restorePurchases(): Promise<boolean> {

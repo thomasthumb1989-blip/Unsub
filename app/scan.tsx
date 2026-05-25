@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +18,7 @@ import { colors, spacing } from '../src/utils/theme';
 import { useTheme } from '../src/contexts/ThemeContext';
 import { addTrial, getSettings } from '../src/utils/storage';
 import { ServiceLogo } from '../src/components/ServiceLogo';
+import { PremiumScreen } from '../src/components/PremiumGate';
 import {
   DiscoveredSubscription,
   scanGmailForSubscriptions,
@@ -35,7 +36,14 @@ export default function ScanScreen() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [error, setError] = useState('');
   const [addedCount, setAddedCount] = useState(0);
+  const [isPremium, setIsPremium] = useState(false);
   const { colors: tc } = useTheme();
+
+  useFocusEffect(
+    useCallback(() => {
+      getSettings().then((s) => setIsPremium(!!s.isPremium));
+    }, [])
+  );
 
   const handleConnect = async () => {
     if (!isGmailConfigured()) {
@@ -187,7 +195,11 @@ export default function ScanScreen() {
           <View style={{ width: 36 }} />
         </View>
 
-        {state === 'idle' && (
+        {!isPremium && (
+          <PremiumScreen feature="Scan your email for hidden subscriptions automatically. Upgrade to Premium — just £3.99 once." />
+        )}
+
+        {isPremium && state === 'idle' && (
           <Animated.View entering={FadeInDown.duration(500)}>
             <View style={styles.heroSection}>
               <LinearGradient
@@ -231,7 +243,7 @@ export default function ScanScreen() {
           </Animated.View>
         )}
 
-        {(state === 'authenticating' || state === 'scanning') && (
+        {isPremium && (state === 'authenticating' || state === 'scanning') && (
           <View style={styles.loadingSection}>
             <ActivityIndicator size="large" color={colors.accent} />
             <Text style={[styles.loadingText, { color: tc.white }]}>
@@ -241,7 +253,7 @@ export default function ScanScreen() {
           </View>
         )}
 
-        {state === 'results' && (
+        {isPremium && state === 'results' && (
           <Animated.View entering={FadeInDown.duration(400)}>
             <View style={styles.resultsHeader}>
               <Text style={[styles.resultsTitle, { color: tc.white }]}>
@@ -326,7 +338,7 @@ export default function ScanScreen() {
           </Animated.View>
         )}
 
-        {state === 'error' && (
+        {isPremium && state === 'error' && (
           <View style={styles.errorSection}>
             <Ionicons name="warning-outline" size={48} color="#EF4444" />
             <Text style={[styles.errorText, { color: tc.textSecondary }]}>{error}</Text>

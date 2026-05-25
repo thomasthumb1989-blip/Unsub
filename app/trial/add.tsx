@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { addTrial, getSettings, getTrials, getCustomCategories } from '../../src/utils/storage';
 import { scheduleTrialReminders } from '../../src/utils/notifications';
+import { maybeRequestReview } from '../../src/utils/storeReview';
 import { searchServices, ServiceInfo } from '../../src/data/services';
 import { colors, spacing, getCurrencySymbol } from '../../src/utils/theme';
 import { useTheme } from '../../src/contexts/ThemeContext';
@@ -123,6 +124,8 @@ export default function AddTrial() {
       await scheduleTrialReminders(trial);
     }
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    // Prompt for App Store review on 3rd subscription added
+    maybeRequestReview();
     router.back();
   };
 

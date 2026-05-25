@@ -322,7 +322,7 @@ function PaywallScreen() {
         </LinearGradient>
       </Pressable>
 
-      <Pressable onPress={handleFree}>
+      <Pressable onPress={handleFree} style={{ width: '100%' }}>
         <Text style={styles.freeText}>Start free with {FREE_TRIAL_LIMIT} subscriptions</Text>
       </Pressable>
 
@@ -587,9 +587,11 @@ const styles = StyleSheet.create({
   },
   purchaseButtonText: { fontSize: 18, fontWeight: '700', color: '#000' },
   freeText: {
-    fontSize: 14,
+    fontSize: 15,
+    fontWeight: '500',
     color: colors.textSecondary,
-    marginTop: 14,
+    marginTop: 16,
+    textAlign: 'center',
     textDecorationLine: 'underline',
   },
   legalText: {

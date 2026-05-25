@@ -281,6 +281,13 @@ const guides: Record<string, CancelGuide> = {
   },
 };
 
+export function getAllCancelGuides(): { name: string; guide: CancelGuide }[] {
+  return Object.entries(guides).map(([name, guide]) => ({
+    name: name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+    guide,
+  }));
+}
+
 export function getCancelGuide(serviceName: string): CancelGuide | null {
   const lower = serviceName.toLowerCase().trim();
   if (guides[lower]) return guides[lower];

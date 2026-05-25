@@ -2,7 +2,7 @@
   "expo": {
     "name": "Unsub",
     "slug": "unsub",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.thomasdev.unsub",
-      "buildNumber": "1",
+      "buildNumber": "4",
       "infoPlist": {
         "NSFaceIDUsageDescription": "Unsub uses Face ID to protect your subscription data with biometric lock.",
         "ITSAppUsesNonExemptEncryption": false

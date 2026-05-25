@@ -9,6 +9,7 @@ import { Trial, getTrials, getSettings } from '../src/utils/storage';
 import { colors, spacing, getCategoryColor, getCurrencySymbol } from '../src/utils/theme';
 import { ServiceLogo } from '../src/components/ServiceLogo';
 import { useTheme } from '../src/contexts/ThemeContext';
+import { PremiumScreen } from '../src/components/PremiumGate';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -30,6 +31,7 @@ export default function CalendarScreen() {
   const [trials, setTrials] = useState<Trial[]>([]);
   const [currency, setCurrency] = useState('GBP');
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [isPremium, setIsPremium] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -37,6 +39,7 @@ export default function CalendarScreen() {
         const [t, s] = await Promise.all([getTrials(), getSettings()]);
         setTrials(t.filter((tr) => tr.status === 'active'));
         setCurrency(s.currency);
+        setIsPremium(!!s.isPremium);
       })();
     }, [])
   );
@@ -84,6 +87,10 @@ export default function CalendarScreen() {
           <View style={{ width: 36 }} />
         </View>
 
+        {!isPremium ? (
+          <PremiumScreen feature="See all your subscription due dates on a calendar. Upgrade to Premium — just £3.99 once." />
+        ) : (
+        <>
         <View style={styles.monthNav}>
           <Pressable onPress={prevMonth} style={[styles.navBtn, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
             <Ionicons name="chevron-back" size={20} color={tc.white} />
@@ -163,6 +170,8 @@ export default function CalendarScreen() {
             <Ionicons name="information-circle-outline" size={18} color={tc.textSecondary} />
             <Text style={[styles.hintText, { color: tc.textSecondary }]}>Tap a day to see due subscriptions</Text>
           </View>
+        )}
+        </>
         )}
       </ScrollView>
     </SafeAreaView>

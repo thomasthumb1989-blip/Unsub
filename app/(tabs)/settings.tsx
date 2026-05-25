@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Settings, getSettings, saveSettings, getTrials, trialsToCSV, loadMockData, clearMockData } from '../../src/utils/storage';
 import { restorePurchases } from '../../src/utils/purchases';
+import { PremiumGate } from '../../src/components/PremiumGate';
 import { colors, spacing } from '../../src/utils/theme';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import * as Sharing from 'expo-sharing';
@@ -178,10 +179,20 @@ export default function SettingsScreen() {
             right={
               <Pressable
                 style={styles.currencySelector}
-                onPress={() => setShowCurrencyPicker(!showCurrencyPicker)}
+                onPress={() => {
+                  if (!settings.isPremium && settings.currency === 'GBP') {
+                    router.push('/paywall');
+                    return;
+                  }
+                  setShowCurrencyPicker(!showCurrencyPicker);
+                }}
               >
                 <Text style={styles.currencySelectorText}>{settings.currency}</Text>
-                <Ionicons name={showCurrencyPicker ? 'chevron-up' : 'chevron-down'} size={14} color={tc.textSecondary} />
+                {!settings.isPremium ? (
+                  <Ionicons name="diamond" size={12} color="#F59E0B" />
+                ) : (
+                  <Ionicons name={showCurrencyPicker ? 'chevron-up' : 'chevron-down'} size={14} color={tc.textSecondary} />
+                )}
               </Pressable>
             }
             tc={tc}
@@ -279,6 +290,14 @@ export default function SettingsScreen() {
         <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>DATA</Text>
         <Animated.View entering={FadeInDown.duration(500).delay(250)} style={[styles.sectionCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
           <SettingRow
+            icon="close-circle-outline"
+            label="Cancel Guides"
+            right={<Ionicons name="chevron-forward" size={18} color={tc.textSecondary} />}
+            onPress={() => router.push('/cancel-guides')}
+            tc={tc}
+          />
+          <View style={styles.divider} />
+          <SettingRow
             icon="pricetags-outline"
             label="Manage Categories"
             right={<Ionicons name="chevron-forward" size={18} color={tc.textSecondary} />}
@@ -297,9 +316,17 @@ export default function SettingsScreen() {
           <SettingRow
             icon="download-outline"
             label="Export CSV"
-            right={<Ionicons name="chevron-forward" size={18} color={tc.textSecondary} />}
+            right={
+              settings.isPremium
+                ? <Ionicons name="chevron-forward" size={18} color={tc.textSecondary} />
+                : <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Ionicons name="diamond" size={14} color="#F59E0B" />
+                    <Text style={{ fontSize: 12, color: '#F59E0B', fontWeight: '600' }}>PRO</Text>
+                  </View>
+            }
             tc={tc}
             onPress={async () => {
+              if (!settings.isPremium) { router.push('/paywall'); return; }
               const trials = await getTrials();
               if (trials.length === 0) { Alert.alert('No data', 'Add subscriptions first.'); return; }
               const csv = trialsToCSV(trials);
@@ -342,16 +369,13 @@ export default function SettingsScreen() {
             icon="star-outline"
             label="Rate Unsub"
             onPress={() => {
-              // TODO: Replace with actual App Store URL once published
-              // iOS: https://apps.apple.com/app/idXXXXXXXXXX?action=write-review
-              // Android: https://play.google.com/store/apps/details?id=com.unsub.app
-              Alert.alert('Coming Soon', 'Rating will be available once the app is published on the App Store.');
+              Linking.openURL('https://apps.apple.com/app/id6770328775?action=write-review');
             }}
             tc={tc}
           />
         </Animated.View>
 
-        <Text style={[styles.version, { color: tc.textSecondary }]}>Unsub v1.0.0</Text>
+        <Text style={[styles.version, { color: tc.textSecondary }]}>Unsub v1.0.1</Text>
 
         {__DEV__ && (
           <Animated.View entering={FadeInDown.duration(400).delay(500)} style={[styles.section, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>

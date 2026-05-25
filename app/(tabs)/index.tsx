@@ -11,6 +11,7 @@ import { colors, spacing, getCategoryColor, getCurrencySymbol, getUrgencyColor }
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { ServiceLogo } from '../../src/components/ServiceLogo';
 import { getExchangeRates, convertCurrency, areRatesStale, refreshExchangeRates, ExchangeRates } from '../../src/utils/currency';
+import { PremiumGate } from '../../src/components/PremiumGate';
 
 function SpendRing({ total, segments, currency, tc }: {
   total: number;
@@ -49,7 +50,7 @@ function SpendRing({ total, segments, currency, tc }: {
 
 export default function Dashboard() {
   const [trials, setTrials] = useState<Trial[]>([]);
-  const [settings, setSettings] = useState({ currency: 'GBP', totalSaved: 0 });
+  const [settings, setSettings] = useState({ currency: 'GBP', totalSaved: 0, isPremium: false });
   const [viewMode, setViewMode] = useState<'monthly' | 'yearly'>('monthly');
   const [rates, setRates] = useState<ExchangeRates>({ GBP: 1 });
 
@@ -186,7 +187,7 @@ export default function Dashboard() {
         </Animated.View>
 
         {categoryMap.size > 0 && (
-          <>
+          <PremiumGate isLocked={!settings.isPremium} feature="See spending breakdown by category. Upgrade to Premium — just £3.99 once.">
             <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>SPENDING BREAKDOWN</Text>
             <Animated.View entering={FadeInDown.duration(500).delay(250)} style={[styles.insightsContainer, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
               {Array.from(categoryMap.entries())
@@ -210,7 +211,7 @@ export default function Dashboard() {
                   );
                 })}
             </Animated.View>
-          </>
+          </PremiumGate>
         )}
 
         <Text style={[styles.sectionHeader, { color: tc.sectionHeader }]}>UPCOMING BILLS</Text>
@@ -417,8 +418,8 @@ const styles = StyleSheet.create({
   },
   insightBarFill: { height: 6, borderRadius: 3 },
   insightAmount: { fontSize: 12, fontWeight: '600', color: colors.white, minWidth: 45, textAlign: 'right' },
-  emptyState: { alignItems: 'center', paddingVertical: 40, gap: 12 },
-  emptyText: { fontSize: 16, color: colors.textSecondary },
+  emptyState: { alignItems: 'center', paddingVertical: 40, gap: 12, paddingHorizontal: spacing.lg, width: '100%' },
+  emptyText: { fontSize: 16, color: colors.textSecondary, textAlign: 'center', width: '100%' },
   emptyBtn: {
     flexDirection: 'row',
     alignItems: 'center',

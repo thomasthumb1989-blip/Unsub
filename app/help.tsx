@@ -31,7 +31,7 @@ const FAQ = [
   },
   {
     q: 'How do I cancel a subscription?',
-    a: 'Open the subscription from your list, then tap "Cancel Subscription" to go directly to the service\'s cancellation page. Once cancelled, tap "I\'ve Cancelled" to log it and track your savings.',
+    a: 'Open the subscription from your list, then scroll to the "How to Cancel" section for step-by-step instructions. You can also browse all cancel guides from Settings > Cancel Guides or tap the button below the FAQs. Once cancelled, tap "I\'ve Cancelled" to log it and track your savings.',
     icon: 'close-circle-outline' as const,
   },
 ];
@@ -79,6 +79,20 @@ export default function HelpScreen() {
         {FAQ.map((item, i) => (
           <AccordionItem key={i} q={item.q} a={item.a} icon={item.icon} index={i} />
         ))}
+
+        <Animated.View entering={FadeInDown.duration(400).delay(550)}>
+          <Pressable
+            style={[styles.guidesBtn, { backgroundColor: tc.card, borderColor: colors.accent }]}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/cancel-guides'); }}
+          >
+            <Ionicons name="close-circle-outline" size={22} color={colors.accent} />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.guidesBtnTitle, { color: tc.white }]}>Browse Cancel Guides</Text>
+              <Text style={[styles.guidesBtnSub, { color: tc.textSecondary }]}>Step-by-step instructions for 30+ services</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.accent} />
+          </Pressable>
+        </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(400).delay(600)}>
           <View style={[styles.contactCard, { backgroundColor: tc.card, borderColor: tc.cardBorder }]}>
@@ -148,6 +162,21 @@ const styles = StyleSheet.create({
     borderTopColor: colors.cardBorder,
     marginLeft: 32,
   },
+  guidesBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: spacing.lg,
+    marginTop: 16,
+    marginBottom: 4,
+    borderWidth: 1,
+    borderColor: colors.accent,
+  },
+  guidesBtnTitle: { fontSize: 16, fontWeight: '700', color: colors.white },
+  guidesBtnSub: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
   contactCard: {
     backgroundColor: colors.card,
     borderRadius: 16,
